@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RecipeBox.Models;
+using RecipeBox.Services.Interfaces;
 
 namespace RecipeBox.Controllers
 {
@@ -7,47 +8,51 @@ namespace RecipeBox.Controllers
     [Route("api/[controller]")]
     public class RecipesController: ControllerBase
     {
-
-        public RecipesController()
+        private IRecipeService _recipeService;
+        public RecipesController(IRecipeService service)
         {
-
+            _recipeService = service;
         }
 
         [HttpGet]
-        public IEnumerable<Recipe> GetAll()
+        public IActionResult GetAll()
         {
-            return new List<Recipe>();
+            return Ok(_recipeService.GetAll());
         }
 
         [HttpGet("{id}")]
-        public Recipe GetByID (int id)
+        public IActionResult GetByID (int id)
         {
-            return new Recipe(name:"");
+            var recipe = _recipeService.GetById(id);
+
+            return recipe == null ? NotFound() : Ok(recipe);
         }
 
         [HttpPost]
-        public void Post(Recipe recipe)
+        public IActionResult Post(Recipe recipe)
         {
-            Recipe recip = recipe;
+            Recipe? result = _recipeService.Create(recipe);
+            return result == null ? BadRequest() : Created("api/recipes", result);
         }
 
         [HttpPut("{id}")]
-        public void PutByID(int id, Recipe recipe)
+        public IActionResult PutByID(int id, Recipe recipe)
         {
-            //тут еще поиск по id конкретного рецепта будет
-            Recipe recip = recipe;
+            bool success = _recipeService.Update(id, recipe);
+            return success ? NoContent() : NotFound();
         }
 
         [HttpDelete("{id}")]
-        public void DeleteByID(int id)
+        public IActionResult DeleteByID(int id)
         {
-            //удаление по id
+            bool success = _recipeService.Delete(id);
+            return success ? NoContent() : NotFound();
         }
 
-        [HttpGet("name/{name}")]
+        [HttpGet("search")]
         public IEnumerable<Recipe> GetByName([FromQuery] string name)
         {
-            return new List<Recipe>();
+            return _recipeService.GetByName(name);
         }
     }
 }
