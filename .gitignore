@@ -13,8 +13,12 @@ obj/
 *.cache
 *.log
 *.tmp
-
+# ================== DB files ==================
+*.mdf
+*.ldf
+*.ldf
 # ================== Other ==================
 .DS_Store
 Thumbs.db
 .json
+appsettings.Development.json
