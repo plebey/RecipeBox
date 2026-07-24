@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using RecipeBox.Data;
 using RecipeBox.Repository;
 using RecipeBox.Repository.Interfaces;
 using RecipeBox.Services;
@@ -11,8 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-builder.Services.AddSingleton<IRecipeRepository, LocalRecipeRepository>();
+//builder.Services.AddSingleton<IRecipeRepository, LocalRecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IIngredientService, IngredientService>();
+builder.Services.AddScoped<IRecipeRepository, SQLRecipeRepository>();
+builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
+builder.Services.AddDbContext<DBContextRecipeBox>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddOpenApi();
 

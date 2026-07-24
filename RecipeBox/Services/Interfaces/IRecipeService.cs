@@ -1,14 +1,15 @@
-﻿using RecipeBox.Models;
+﻿using RecipeBox.DTOs.Recipe;
+using RecipeBox.Models;
 
 namespace RecipeBox.Services.Interfaces
 {
     public interface IRecipeService
     {
-        IEnumerable<Recipe> GetAll();
-        Recipe? GetById(int id);
-        Recipe? Create(Recipe recipe);
-        bool Update(int id, Recipe recipe);
+        IEnumerable<RecipeResponse> GetAll();
+        RecipeResponse? GetById(int id);
+        RecipeResponse? Create(CreateRecipeRequest recipe);
+        bool Update(int id, UpdateRecipeRequest recipe);
         bool Delete(int id);
-        IEnumerable<Recipe> GetByName(string name);
+        IEnumerable<RecipeResponse> GetByName(string name);
     }
 }

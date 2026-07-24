@@ -3,16 +3,20 @@
     public class Recipe
     {
         public int Id { get; set; }
-        public string Name { get; private set; }
-        public string? Description { get; private set; }
+        public string Name { get; init; }
+        public string? Description { get; init; }
+        public string? RecipeURL { get; init; }
 
-        public List<Ingredient> Ingredients { get; init; }
+        public List<RecipeIngredient> RecipeIngredients { get; init; } = new List<RecipeIngredient>();
 
-        public Recipe(string name, string description = "", List<Ingredient>? ingredients = null)
+        private Recipe() { }
+
+        public Recipe(string name, string? description = null, string? recipeURL = null, List<RecipeIngredient>? newRecipeIngredients = null)
         {
             Name = name;
             Description = description;
-            Ingredients = ingredients ?? new List<Ingredient>();
+            RecipeURL = recipeURL;
+            RecipeIngredients = newRecipeIngredients ?? new List<RecipeIngredient>();
         }
     }
 }

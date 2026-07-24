@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RecipeBox.DTOs.Recipe;
 using RecipeBox.Models;
 using RecipeBox.Services.Interfaces;
 
@@ -29,14 +30,14 @@ namespace RecipeBox.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post(Recipe recipe)
+        public IActionResult Post(CreateRecipeRequest recipe)
         {
-            Recipe? result = _recipeService.Create(recipe);
-            return result == null ? BadRequest() : Created("api/recipes", result);
+            RecipeResponse? result = _recipeService.Create(recipe);
+            return result == null ? BadRequest() : CreatedAtAction(nameof(GetByID),new {id = result.Id}, result);
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutByID(int id, Recipe recipe)
+        public IActionResult PutByID(int id, UpdateRecipeRequest recipe)
         {
             bool success = _recipeService.Update(id, recipe);
             return success ? NoContent() : NotFound();
@@ -50,9 +51,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet("search")]
-        public IEnumerable<Recipe> GetByName([FromQuery] string name)
+        public IActionResult GetByName([FromQuery] string name)
         {
-            return _recipeService.GetByName(name);
+            return Ok(_recipeService.GetByName(name));
         }
     }
 }

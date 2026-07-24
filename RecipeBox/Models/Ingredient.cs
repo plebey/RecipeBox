@@ -2,15 +2,22 @@
 {
     public class Ingredient
     {
+        public int Id { get; set; }
+
+        //TODO: вывести в отдельную таблицу с хранением синонимов названий
         public string Name { get; init; }
         public string Unit { get; init; }
-        public decimal Amount { get; set; }
+        public string? PurchaseURL { get; init; }
 
-        public Ingredient(string name, string unit, decimal amount)
+        public List<RecipeIngredient> RecipeIngredients { get; init; } = new List<RecipeIngredient>();
+
+        private Ingredient() { }
+        public Ingredient(string name, string unit, string? purchaseURL = null)
         {
             Name = name;
             Unit = unit;
-            Amount = amount;
+            PurchaseURL = purchaseURL;
+            RecipeIngredients = new List<RecipeIngredient>();
         }
     }
 }
