@@ -3,7 +3,6 @@ using RecipeBox.DTOs.Recipe;
 using RecipeBox.DTOs.RecipeIngredients;
 using RecipeBox.Models;
 using RecipeBox.Repository.Interfaces;
-using RecipeBox.Repository.Interfaces;
 using RecipeBox.Services;
 using RecipeBox.Services.Interfaces;
 
@@ -33,6 +32,7 @@ namespace RecipeBox.Tests
 
             var res = service.Create(recReq);
 
+            Assert.NotNull(res);
             Assert.Equal("Ингред1", res.Ingredients[0].IngredientName);
             Assert.Equal("Ингред3", res.Ingredients[1].IngredientName);
             mockRepo.Verify(repo => repo.Create(It.IsAny<Recipe>()), Times.Once);
@@ -117,7 +117,7 @@ namespace RecipeBox.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(" ")]
+        [InlineData("   ")]
         public void Create_WithEmptyName_ReturnsNull(string name)
         {
             var mockRepo = new Mock<IRecipeRepository>();
@@ -142,7 +142,7 @@ namespace RecipeBox.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public void Update_WithEmptyName_ReturnsNull(string name)
+        public void Update_WithEmptyName_ReturnsFalse(string name)
         {
             var mockRepo = new Mock<IRecipeRepository>();
             mockRepo.Setup(repo => repo.Update(It.IsAny<int>(), It.IsAny<Recipe>()))
@@ -162,7 +162,7 @@ namespace RecipeBox.Tests
         }
         // проверка при несуществующем ингредиенте (вызов create 0 раз)
         [Fact]
-        public void Update_WithInvalidIngredient_ReturnsNull()
+        public void Update_WithInvalidIngredient_ReturnsFalse()
         {
             var mockRepo = new Mock<IRecipeRepository>();
             mockRepo.Setup(repo => repo.Update(It.IsAny<int>(), It.IsAny<Recipe>()))
@@ -222,7 +222,7 @@ namespace RecipeBox.Tests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             mockRepo.Setup(repo => repo.GetByName(It.IsAny<string>()))
-                    .Returns(Enumerable.Empty<Recipe>);
+                    .Returns(Enumerable.Empty<Recipe>());
             var mockIngrService = new Mock<IIngredientService>();
 
             var service = new RecipeService(mockRepo.Object, mockIngrService.Object);
