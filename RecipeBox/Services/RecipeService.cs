@@ -64,6 +64,10 @@ namespace RecipeBox.Services
                 return null;
             }
             Recipe newRec = new Recipe(recipe.Name, recipe.Description, recipe.RecipeURL);
+            if (recipe.RecipeIngredients == null)
+            {
+                recipe.RecipeIngredients = new List<CreateRecipeIngredientRequest>();
+            }
             foreach (var recipIng in recipe.RecipeIngredients)
             {
                 var ingredient = _ingredientService.GetByIdDomain(recipIng.IngredientId);
@@ -73,7 +77,6 @@ namespace RecipeBox.Services
             }    
             return BuildRecipeResponse(_repository.Create(newRec));
         }
-
         public bool Update(int id, UpdateRecipeRequest recipe)
         {
             if (recipe == null)
