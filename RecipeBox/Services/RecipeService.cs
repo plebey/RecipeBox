@@ -90,6 +90,11 @@ namespace RecipeBox.Services
 
             Recipe newRec = new Recipe(recipe.Name, recipe.Description, recipe.RecipeURL);
 
+            if (recipe.RecipeIngredients == null)
+            {
+                recipe.RecipeIngredients = new List<CreateRecipeIngredientRequest>();
+            }
+
             foreach (var recipIng in recipe.RecipeIngredients)
             {
                 var ingredient = _ingredientService.GetByIdDomain(recipIng.IngredientId);
