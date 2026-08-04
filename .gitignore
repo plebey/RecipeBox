@@ -12,6 +12,7 @@ obj/
 *.exe
 *.cache
 *.log
+Logs/
 *.tmp
 # ================== DB files ==================
 *.mdf
