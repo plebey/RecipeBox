@@ -7,7 +7,7 @@ namespace RecipeBox.Repository.Interfaces
         //GetAll, GetById, Create, Update, Delete, GetByName
         IEnumerable<Ingredient> GetAll();
         Ingredient? GetById(int id);
-        Ingredient? Create(Ingredient recipe);
+        Ingredient Create(Ingredient recipe);
         bool Update(int id, Ingredient recipe);
         bool Delete(int id);
         Ingredient? GetByName(string name);

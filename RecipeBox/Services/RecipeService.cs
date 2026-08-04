@@ -1,4 +1,6 @@
-﻿using RecipeBox.DTOs.Recipe;
+﻿using RecipeBox.Common;
+using RecipeBox.DTOs.Ingredients;
+using RecipeBox.DTOs.Recipe;
 using RecipeBox.DTOs.RecipeIngredients;
 using RecipeBox.Models;
 using RecipeBox.Repository.Interfaces;
@@ -9,15 +11,15 @@ namespace RecipeBox.Services
     public class RecipeService: IRecipeService
     {
         private readonly IRecipeRepository _repository;
-        private readonly IIngredientService _ingredientService;
+        private readonly IIngredientRepository _ingredientRepository;
 
-        public RecipeService(IRecipeRepository repository, IIngredientService ingredientService)
+        public RecipeService(IRecipeRepository repository, IIngredientRepository ingredientRepo)
         {
             this._repository = repository;
-            this._ingredientService = ingredientService;
+            this._ingredientRepository = ingredientRepo;
         }
 
-        private RecipeResponse? BuildRecipeResponse(Recipe? recipe)
+        private RecipeResponse BuildRecipeResponse(Recipe recipe)
         {
             if (recipe == null)
                 return null;
@@ -39,7 +41,7 @@ namespace RecipeBox.Services
         }
 
         //TODO: подумать, в каком виде отдавать данные
-        public IEnumerable<RecipeResponse> GetAll()
+        public Result<IEnumerable<RecipeResponse>> GetAll()
         {
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
             IEnumerable<Recipe> recipes = _repository.GetAll();
@@ -47,81 +49,129 @@ namespace RecipeBox.Services
             {
                 recipeRes.Add(BuildRecipeResponse(recipe));
             }
-            return recipeRes;
+            return Result<IEnumerable<RecipeResponse>>.Success(recipeRes);
         }
-        public RecipeResponse? GetById(int id)
+        public Result<RecipeResponse> GetById(int id)
         {
-            return BuildRecipeResponse(_repository.GetById(id));
+            if (id <= 0)
+                return Result<RecipeResponse>.Failure(ErrorType.Validation,
+                                                      $"Id must be greater than 0.");
+            var res = _repository.GetById(id);
+            if (res == null)
+                return Result<RecipeResponse>.Failure(ErrorType.NotFound,
+                                                      $"Recipe with id {id} not found.");
+            return Result<RecipeResponse>.Success(BuildRecipeResponse(res));
         }
-        public RecipeResponse? Create(CreateRecipeRequest recipe)
+
+
+        private Result<List<RecipeIngredient>> BuildRecipeIngredients(IEnumerable<CreateRecipeIngredientRequest> recipeIngredients)
         {
-            if (recipe == null)
+            var res = new List<RecipeIngredient>();
+            foreach (var recipIng in recipeIngredients)
             {
-                return null;
+                if (recipIng.IngredientId <= 0)
+                    return Result<List<RecipeIngredient>>.Failure(ErrorType.Validation,
+                                                          "Ingredient id must be greater than 0.");
+                if (recipIng.Amount <= 0)
+                    return Result<List<RecipeIngredient>>.Failure(ErrorType.Validation,
+                                                          "Amount must be greater than 0.");
+                if (res.Any(i => i.IngredientId == recipIng.IngredientId))
+                    return Result<List<RecipeIngredient>>.Failure(ErrorType.Validation,
+                                                          "Duplicate ingredient in list.");
+
+                var ingredient = _ingredientRepository.GetById(recipIng.IngredientId);
+                if (ingredient == null)
+                    return Result<List<RecipeIngredient>>.Failure(ErrorType.NotFound,
+                               $"Ingredient with id {recipIng.IngredientId} not found.");
+                res.Add(new RecipeIngredient(0, null, recipIng.IngredientId, ingredient, recipIng.Amount));
             }
+            return Result<List<RecipeIngredient>>.Success(res);
+        }
+
+        public Result<RecipeResponse> Create(CreateRecipeRequest recipe)
+        {
             if (string.IsNullOrWhiteSpace(recipe.Name))
             {
-                return null;
+                return Result<RecipeResponse>.Failure(ErrorType.Validation,
+                               "Name must not be empty.");
             }
-            Recipe newRec = new Recipe(recipe.Name, recipe.Description, recipe.RecipeURL);
-            if (recipe.RecipeIngredients == null)
+            var name = recipe.Name.Trim();
+
+            Recipe newRec = new Recipe(name, recipe.Description, recipe.RecipeURL);
+
+
+            var recipeIngredients = recipe.RecipeIngredients ?? 
+                                    Enumerable.Empty<CreateRecipeIngredientRequest>();
+
+            var resBuild = BuildRecipeIngredients(recipeIngredients);
+            if (resBuild.IsSuccess)
+                newRec.RecipeIngredients.AddRange(resBuild.Value!);
+            else
             {
-                recipe.RecipeIngredients = new List<CreateRecipeIngredientRequest>();
+                return Result<RecipeResponse>.Failure(resBuild.ErrorType!.Value, resBuild.ErrorMsg!);
             }
-            foreach (var recipIng in recipe.RecipeIngredients)
-            {
-                var ingredient = _ingredientService.GetByIdDomain(recipIng.IngredientId);
-                if (ingredient == null)
-                    return null;
-                newRec.RecipeIngredients.Add(new RecipeIngredient(0, null, recipIng.IngredientId, ingredient, recipIng.Amount));
-            }    
-            return BuildRecipeResponse(_repository.Create(newRec));
+            
+            return Result<RecipeResponse>.Success(BuildRecipeResponse(_repository.Create(newRec)));
+
         }
-        public bool Update(int id, UpdateRecipeRequest recipe)
+
+        public Result Update(int id, UpdateRecipeRequest recipe)
         {
-            if (recipe == null)
-            {
-                return false;
-            }
+            if (id <= 0)
+                return Result.Failure(ErrorType.Validation,
+                                                      $"Id must be greater than 0.");
             if (string.IsNullOrWhiteSpace(recipe.Name))
             {
-                return false;
+                return Result.Failure(ErrorType.Validation,
+                               "Name must not be empty.");
             }
+            var name = recipe.Name.Trim();
 
-            Recipe newRec = new Recipe(recipe.Name, recipe.Description, recipe.RecipeURL);
+            Recipe newRec = new Recipe(name, recipe.Description, recipe.RecipeURL);
 
-            if (recipe.RecipeIngredients == null)
+            var recipeIngredients = recipe.RecipeIngredients ??
+                                    Enumerable.Empty<CreateRecipeIngredientRequest>();
+
+            var resBuild = BuildRecipeIngredients(recipeIngredients);
+            if (resBuild.IsSuccess)
+                newRec.RecipeIngredients.AddRange(resBuild.Value!);
+            else
             {
-                recipe.RecipeIngredients = new List<CreateRecipeIngredientRequest>();
+                return Result.Failure(resBuild.ErrorType!.Value, resBuild.ErrorMsg!);
             }
 
-            foreach (var recipIng in recipe.RecipeIngredients)
-            {
-                var ingredient = _ingredientService.GetByIdDomain(recipIng.IngredientId);
-                if (ingredient == null)
-                    return false;
-                newRec.RecipeIngredients.Add(new RecipeIngredient(0, null, recipIng.IngredientId, ingredient, recipIng.Amount));
-            }
-            return _repository.Update(id, newRec);
+            return _repository.Update(id, newRec) ?
+                   Result.Success() :
+                   Result.Failure(ErrorType.NotFound,
+                                  $"Recipe with id <{id}> was not found.");
         }
-        public bool Delete(int id)
+        public Result Delete(int id)
         {
-            return _repository.Delete(id);
+            if (id <= 0)
+                return Result.Failure(ErrorType.Validation,
+                                                      $"Id must be greater than 0.");
+            return _repository.Delete(id) ?
+                   Result.Success() :
+                   Result.Failure(ErrorType.NotFound,
+                                  $"Recipe with id <{id}> was not found.");
         }
-        public IEnumerable<RecipeResponse> GetByName(string name)
+        public Result<IEnumerable<RecipeResponse>> GetByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                return Enumerable.Empty<RecipeResponse>();
+                return Result<IEnumerable<RecipeResponse>>.Failure
+                                                            (ErrorType.Validation,
+                                                            "Name must not be empty.");
+
+            name = name.Trim();
             var recipesByNames = _repository.GetByName(name);
-            if (recipesByNames == null)
-                return Enumerable.Empty<RecipeResponse>();
+
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
 
-            foreach (Recipe recipe in recipesByNames)
+            foreach (var recipe in recipesByNames)
             {
                 recipeRes.Add(BuildRecipeResponse(recipe));
             }
-            return recipeRes;
+            return Result<IEnumerable<RecipeResponse>>.Success(recipeRes);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using RecipeBox.Common;
 using RecipeBox.DTOs.Ingredients;
 using RecipeBox.Models;
 using RecipeBox.Services.Interfaces;
@@ -16,45 +17,76 @@ namespace RecipeBox.Controllers
             _ingredientService = service;
         }
 
+        private IActionResult HandleError(ErrorType? errorType, string errorMsg)
+        {
+            return errorType switch
+            {
+                ErrorType.Validation => BadRequest(errorMsg),
+                ErrorType.Conflict => Conflict(errorMsg),
+                ErrorType.NotFound => NotFound(errorMsg),
+
+                _ => throw new InvalidOperationException($"Unsupported error type: {errorType}")
+            };
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_ingredientService.GetAll());
+            var res = _ingredientService.GetAll();
+            if (res.IsSuccess)
+                return Ok(res.Value);
+
+            return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpGet("{id}")]
         public IActionResult GetByID(int id)
         {
-            var ingredient = _ingredientService.GetById(id);
+            var res = _ingredientService.GetById(id);
+            if (res.IsSuccess)
+                return Ok(res.Value);
 
-            return ingredient == null ? NotFound() : Ok(ingredient);
+            return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPost]
         public IActionResult Post(CreateIngredientRequest ingredient)
         {
-            IngredientResponse? result = _ingredientService.Create(ingredient);
-            return result == null ? BadRequest() : CreatedAtAction(nameof(GetByID), new { id = result.Id }, result);
+            var res = _ingredientService.Create(ingredient);
+            if (res.IsSuccess)
+                return CreatedAtAction(nameof(GetByID), new { id = res.Value.Id }, res.Value);
+            return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPut("{id}")]
         public IActionResult PutByID(int id, UpdateIngredientRequest ingredient)
         {
-            bool success = _ingredientService.Update(id, ingredient);
-            return success ? NoContent() : NotFound();
+            var res = _ingredientService.Update(id, ingredient);
+
+            if (res.IsSuccess)
+                return NoContent();
+
+            return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpDelete("{id}")]
         public IActionResult DeleteByID(int id)
         {
-            bool success = _ingredientService.Delete(id);
-            return success ? NoContent() : NotFound();
+            var res = _ingredientService.Delete(id);
+            if (res.IsSuccess)
+                return NoContent();
+
+            return HandleError(res.ErrorType, res.ErrorMsg);
+
         }
 
         [HttpGet("search")]
         public IActionResult GetByName([FromQuery] string name)
         {
-            return Ok(_ingredientService.GetByName(name));
+            var res = _ingredientService.GetByName(name);
+            if (res.IsSuccess)
+                return Ok(res.Value);
+            return HandleError(res.ErrorType, res.ErrorMsg);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Moq;
+using RecipeBox.Common;
 using RecipeBox.DTOs.Ingredients;
 using RecipeBox.Models;
 using RecipeBox.Repository.Interfaces;
@@ -25,9 +26,9 @@ namespace RecipeBox.Tests
 
             var res = service.Create(createReq);
 
-            Assert.NotNull(res);
-            Assert.Equal("Перец", res.Name);
-            Assert.Equal("г", res.Unit);
+            Assert.NotNull(res.Value);
+            Assert.Equal("Перец", res.Value.Name);
+            Assert.Equal("г", res.Value.Unit);
             mockRepo.Verify(repo => repo.Create(It.IsAny<Ingredient>()), Times.Once);
         }
 
@@ -39,7 +40,7 @@ namespace RecipeBox.Tests
         [InlineData("Капуста", " ")]
         [InlineData("", "")]
         [InlineData(" ", " ")]
-        public void Create_WithEmptyNameUnit_ReturnNull(string name, string unit)
+        public void Create_WithEmptyNameUnit_ReturnValidationError(string name, string unit)
         {
             var mockRepo = new Mock<IIngredientRepository>();
             mockRepo.Setup(repo => repo.Create(It.IsAny<Ingredient>()))
@@ -50,13 +51,14 @@ namespace RecipeBox.Tests
 
             var res = service.Create(createReq);
 
-            Assert.Null(res);
+            Assert.Null(res.Value);
+            Assert.Equal(ErrorType.Validation, res.ErrorType);
             mockRepo.Verify(repo => repo.Create(It.IsAny<Ingredient>()), Times.Never);
         }
 
         //тест на дубликат через getByName
         [Fact]
-        public void Create_WithDuplicateName_ReturnNull()
+        public void Create_WithDuplicateName_ReturnErrorConflict()
         {
             var mockRepo = new Mock<IIngredientRepository>();
             mockRepo.Setup(repo => repo.Create(It.IsAny<Ingredient>()))
@@ -68,7 +70,8 @@ namespace RecipeBox.Tests
             var createReq = new CreateIngredientRequest { Name = "Соль", Unit = "кг." };
             var res = service.Create(createReq);
 
-            Assert.Null(res);
+            Assert.Null(res.Value);
+            Assert.Equal(ErrorType.Conflict, res.ErrorType);
             mockRepo.Verify(repo => repo.Create(It.IsAny<Ingredient>()), Times.Never);
         }
 
@@ -90,7 +93,7 @@ namespace RecipeBox.Tests
 
             var res = service.Update(1, createReq);
 
-            Assert.True(res);
+            Assert.True(res.IsSuccess);
             mockRepo.Verify(repo => repo.Update(It.IsAny<int>(), It.IsAny<Ingredient>()), Times.Once);
 
         }
@@ -104,7 +107,7 @@ namespace RecipeBox.Tests
         [InlineData("", "")]
         [InlineData(" ", " ")]
 
-        public void Update_WithEmptyNameUnit_ReturnFalse(string name, string unit)
+        public void Update_WithEmptyNameUnit_ReturnErrorValidation(string name, string unit)
         {
             var mockRepo = new Mock<IIngredientRepository>();
             mockRepo.Setup(repo => repo.Update(It.IsAny<int>(), It.IsAny<Ingredient>()))
@@ -115,7 +118,29 @@ namespace RecipeBox.Tests
 
             var res = service.Update(1, createReq);
 
-            Assert.False(res);
+            Assert.False(res.IsSuccess);
+            Assert.Equal(ErrorType.Validation, res.ErrorType);
+            mockRepo.Verify(repo => repo.Update(It.IsAny<int>(), It.IsAny<Ingredient>()), Times.Never);
+
+        }
+
+        //тест на дубликат имени при update
+        [Fact]
+        public void Update_WithDuplicateName_ReturnErrorConflict()
+        {
+            var mockRepo = new Mock<IIngredientRepository>();
+            mockRepo.Setup(repo => repo.Update(It.IsAny<int>(), It.IsAny<Ingredient>()))
+                    .Returns(false);
+            mockRepo.Setup(repo => repo.GetByName("name"))
+                    .Returns(new Ingredient ("Name", "Unit") { Id = 5 });
+
+            var service = new IngredientService(mockRepo.Object);
+            var updateReq = new UpdateIngredientRequest { Name = "  name  ", Unit = "unit" };
+
+            var res = service.Update(1, updateReq);
+
+            Assert.False(res.IsSuccess);
+            Assert.Equal(ErrorType.Conflict, res.ErrorType);
             mockRepo.Verify(repo => repo.Update(It.IsAny<int>(), It.IsAny<Ingredient>()), Times.Never);
 
         }

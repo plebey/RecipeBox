@@ -34,7 +34,7 @@ namespace RecipeBox.Repository
                                    .Where(rec => rec.Name == name).ToList();
         }
 
-        public Recipe? Create(Recipe recipe)
+        public Recipe Create(Recipe recipe)
         {
             recipe.Id = 0;
             _context.Recipes.Add(recipe);
@@ -45,49 +45,39 @@ namespace RecipeBox.Repository
 
         public bool Update(int id, Recipe newRecipe)
         {
-            try
+
+            var recipe = _context.Recipes
+                        .Include(r=>r.RecipeIngredients)
+                        .FirstOrDefault(r => r.Id == id);
+            if (recipe == null)
+                return false; // не нашли
+
+            newRecipe.Id = recipe.Id;
+
+            _context.Entry(recipe).CurrentValues.SetValues(newRecipe);
+
+            recipe.RecipeIngredients.Clear();
+            foreach (var recIng in newRecipe.RecipeIngredients)
             {
-                var recipe = _context.Recipes
-                            .Include(r=>r.RecipeIngredients)
-                            .FirstOrDefault(r => r.Id == id);
-                if (recipe == null)
-                    return false; // не нашли
-
-                newRecipe.Id = recipe.Id;
-
-                _context.Entry(recipe).CurrentValues.SetValues(newRecipe);
-
-                recipe.RecipeIngredients.Clear();
-                foreach (var recIng in newRecipe.RecipeIngredients)
-                {
-                    recipe.RecipeIngredients.Add(recIng);
-                }
-
-                _context.SaveChanges();
-
-                return true;
+                recipe.RecipeIngredients.Add(recIng);
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
+
+            _context.SaveChanges();
+
+            return true;
+
         }
 
         public bool Delete(int id)
         {
-            try
-            {
-                var recipe = _context.Recipes.FirstOrDefault(rec => rec.Id == id);
-                if (recipe == null)
-                    return false;
-                _context.Recipes.Remove(recipe);
-                _context.SaveChanges();
-                return true;
-            }
-            catch (Exception ex)
-            {
+
+            var recipe = _context.Recipes.FirstOrDefault(rec => rec.Id == id);
+            if (recipe == null)
                 return false;
-            }
+            _context.Recipes.Remove(recipe);
+            _context.SaveChanges();
+            return true;
+
         }
 
         

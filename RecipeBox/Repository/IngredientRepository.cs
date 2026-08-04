@@ -22,7 +22,7 @@ namespace RecipeBox.Repository
             return _context.Ingredients.FirstOrDefault(rec => rec.Id == id);
         }
 
-        public Ingredient? Create(Ingredient ingred)
+        public Ingredient Create(Ingredient ingred)
         {
             ingred.Id = 0;
             _context.Ingredients.Add(ingred);
@@ -33,40 +33,29 @@ namespace RecipeBox.Repository
 
         public bool Update(int id, Ingredient newIngred)
         {
-            try
-            {
-                var ingred = _context.Ingredients.FirstOrDefault(r => r.Id == id);
-                if (ingred == null)
-                    return false; // не нашли
+            var ingred = _context.Ingredients.FirstOrDefault(r => r.Id == id);
+            if (ingred == null)
+                return false; // не нашли
  
-                newIngred.Id = ingred.Id;
+            newIngred.Id = ingred.Id;
 
-                _context.Entry(ingred).CurrentValues.SetValues(newIngred);
-                _context.SaveChanges();
+            _context.Entry(ingred).CurrentValues.SetValues(newIngred);
+            _context.SaveChanges();
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            return true;
+
         }
 
         public bool Delete(int id)
         {
-            try
-            {
-                var ingred = _context.Ingredients.FirstOrDefault(ing => ing.Id == id);
-                if (ingred == null)
-                    return false;
-                _context.Ingredients.Remove(ingred);
-                _context.SaveChanges();
-                return true;
-            }
-            catch (Exception ex)
-            {
+
+            var ingred = _context.Ingredients.FirstOrDefault(ing => ing.Id == id);
+            if (ingred == null)
                 return false;
-            }
+            _context.Ingredients.Remove(ingred);
+            _context.SaveChanges();
+            return true; 
+
         }
 
         public Ingredient? GetByName(string name)
