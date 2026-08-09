@@ -7,7 +7,7 @@ using RecipeBox.Repository.Interfaces;
 using RecipeBox.Services;
 using RecipeBox.Services.Interfaces;
 
-namespace RecipeBox.Tests
+namespace RecipeBox.Tests.UnitTests
 {
     public class RecipeServiceTests
     {
