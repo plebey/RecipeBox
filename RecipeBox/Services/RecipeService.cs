@@ -40,23 +40,23 @@ namespace RecipeBox.Services
             return response;
         }
 
-        //TODO: подумать, в каком виде отдавать данные
-        public Result<IEnumerable<RecipeResponse>> GetAll()
+
+        public async Task<Result<IEnumerable<RecipeResponse>>> GetAllAsync()
         {
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
-            IEnumerable<Recipe> recipes = _repository.GetAll();
+            IEnumerable<Recipe> recipes = await _repository.GetAllAsync();
             foreach (Recipe recipe in recipes)
             {
                 recipeRes.Add(BuildRecipeResponse(recipe));
             }
             return Result<IEnumerable<RecipeResponse>>.Success(recipeRes);
         }
-        public Result<RecipeResponse> GetById(int id)
+        public async Task<Result<RecipeResponse>> GetByIdAsync(int id)
         {
             if (id <= 0)
                 return Result<RecipeResponse>.Failure(ErrorType.Validation,
                                                       $"Id must be greater than 0.");
-            var res = _repository.GetById(id);
+            var res = await _repository.GetByIdAsync(id);
             if (res == null)
                 return Result<RecipeResponse>.Failure(ErrorType.NotFound,
                                                       $"Recipe with id {id} not found.");
@@ -64,7 +64,7 @@ namespace RecipeBox.Services
         }
 
 
-        private Result<List<RecipeIngredient>> BuildRecipeIngredients(IEnumerable<CreateRecipeIngredientRequest> recipeIngredients)
+        private async Task <Result<List<RecipeIngredient>>> BuildRecipeIngredientsAsync(IEnumerable<CreateRecipeIngredientRequest> recipeIngredients)
         {
             var res = new List<RecipeIngredient>();
             foreach (var recipIng in recipeIngredients)
@@ -79,7 +79,7 @@ namespace RecipeBox.Services
                     return Result<List<RecipeIngredient>>.Failure(ErrorType.Validation,
                                                           "Duplicate ingredient in list.");
 
-                var ingredient = _ingredientRepository.GetById(recipIng.IngredientId);
+                var ingredient = await _ingredientRepository.GetByIdAsync(recipIng.IngredientId);
                 if (ingredient == null)
                     return Result<List<RecipeIngredient>>.Failure(ErrorType.NotFound,
                                $"Ingredient with id {recipIng.IngredientId} not found.");
@@ -88,7 +88,7 @@ namespace RecipeBox.Services
             return Result<List<RecipeIngredient>>.Success(res);
         }
 
-        public Result<RecipeResponse> Create(CreateRecipeRequest recipe)
+        public async Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe)
         {
             if (string.IsNullOrWhiteSpace(recipe.Name))
             {
@@ -103,7 +103,7 @@ namespace RecipeBox.Services
             var recipeIngredients = recipe.RecipeIngredients ?? 
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();
 
-            var resBuild = BuildRecipeIngredients(recipeIngredients);
+            var resBuild = await BuildRecipeIngredientsAsync(recipeIngredients);
             if (resBuild.IsSuccess)
                 newRec.RecipeIngredients.AddRange(resBuild.Value!);
             else
@@ -111,11 +111,11 @@ namespace RecipeBox.Services
                 return Result<RecipeResponse>.Failure(resBuild.ErrorType!.Value, resBuild.ErrorMsg!);
             }
             
-            return Result<RecipeResponse>.Success(BuildRecipeResponse(_repository.Create(newRec)));
+            return Result<RecipeResponse>.Success(BuildRecipeResponse(await _repository.CreateAsync(newRec)));
 
         }
 
-        public Result Update(int id, UpdateRecipeRequest recipe)
+        public async Task<Result> UpdateAsync(int id, UpdateRecipeRequest recipe)
         {
             if (id <= 0)
                 return Result.Failure(ErrorType.Validation,
@@ -132,7 +132,7 @@ namespace RecipeBox.Services
             var recipeIngredients = recipe.RecipeIngredients ??
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();
 
-            var resBuild = BuildRecipeIngredients(recipeIngredients);
+            var resBuild = await BuildRecipeIngredientsAsync(recipeIngredients);
             if (resBuild.IsSuccess)
                 newRec.RecipeIngredients.AddRange(resBuild.Value!);
             else
@@ -140,22 +140,22 @@ namespace RecipeBox.Services
                 return Result.Failure(resBuild.ErrorType!.Value, resBuild.ErrorMsg!);
             }
 
-            return _repository.Update(id, newRec) ?
+            return await _repository.UpdateAsync(id, newRec) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,
                                   $"Recipe with id <{id}> was not found.");
         }
-        public Result Delete(int id)
+        public async Task<Result> DeleteAsync(int id)
         {
             if (id <= 0)
                 return Result.Failure(ErrorType.Validation,
                                                       $"Id must be greater than 0.");
-            return _repository.Delete(id) ?
+            return await _repository.DeleteAsync(id) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,
                                   $"Recipe with id <{id}> was not found.");
         }
-        public Result<IEnumerable<RecipeResponse>> GetByName(string name)
+        public async Task<Result<IEnumerable<RecipeResponse>>> GetByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return Result<IEnumerable<RecipeResponse>>.Failure
@@ -163,7 +163,7 @@ namespace RecipeBox.Services
                                                             "Name must not be empty.");
 
             name = name.Trim();
-            var recipesByNames = _repository.GetByName(name);
+            var recipesByNames = await _repository.GetByNameAsync(name);
 
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
 

@@ -13,42 +13,42 @@ namespace RecipeBox.Repository
             _context = context;
         }
 
-        public IEnumerable<Recipe> GetAll()
+        public async Task<IEnumerable<Recipe>> GetAllAsync()
         {
-            return _context.Recipes.Include(r => r.RecipeIngredients)
+            return await _context.Recipes.Include(r => r.RecipeIngredients)
                                    .ThenInclude(i=> i.Ingredient)
-                                   .ToList();
+                                   .ToListAsync();
         }
 
-        public Recipe? GetById(int id)
+        public Task<Recipe?> GetByIdAsync(int id)
         {
             return _context.Recipes.Include(r => r.RecipeIngredients)
                                    .ThenInclude(i => i.Ingredient)
-                                   .FirstOrDefault(rec => rec.Id == id);
+                                   .FirstOrDefaultAsync(rec => rec.Id == id);
         }
 
-        public IEnumerable<Recipe> GetByName(string name)
+        public async Task<IEnumerable<Recipe>> GetByNameAsync(string name)
         {
-            return _context.Recipes.Include(r => r.RecipeIngredients)
+            return await _context.Recipes.Include(r => r.RecipeIngredients)
                                    .ThenInclude(i => i.Ingredient)
-                                   .Where(rec => rec.Name == name).ToList();
+                                   .Where(rec => rec.Name == name).ToListAsync();
         }
 
-        public Recipe Create(Recipe recipe)
+        public async Task<Recipe> CreateAsync(Recipe recipe)
         {
             recipe.Id = 0;
             _context.Recipes.Add(recipe);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return recipe;
         }
 
-        public bool Update(int id, Recipe newRecipe)
+        public async Task<bool> UpdateAsync(int id, Recipe newRecipe)
         {
 
-            var recipe = _context.Recipes
+            var recipe = await _context.Recipes
                         .Include(r=>r.RecipeIngredients)
-                        .FirstOrDefault(r => r.Id == id);
+                        .FirstOrDefaultAsync(r => r.Id == id);
             if (recipe == null)
                 return false; // не нашли
 
@@ -62,20 +62,20 @@ namespace RecipeBox.Repository
                 recipe.RecipeIngredients.Add(recIng);
             }
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
 
         }
 
-        public bool Delete(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
 
-            var recipe = _context.Recipes.FirstOrDefault(rec => rec.Id == id);
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(rec => rec.Id == id);
             if (recipe == null)
                 return false;
             _context.Recipes.Remove(recipe);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return true;
 
         }

@@ -6,11 +6,11 @@ namespace RecipeBox.Services.Interfaces
 {
     public interface IIngredientService
     {
-        Result<IEnumerable<IngredientResponse>> GetAll();
-        Result<IngredientResponse> GetByName(string name);
-        Result<IngredientResponse> GetById(int id);
-        Result<IngredientResponse> Create(CreateIngredientRequest ingredient);
-        Result Update(int id, UpdateIngredientRequest ingredient);
-        Result Delete(int id);
+        Task<Result<IEnumerable<IngredientResponse>>> GetAllAsync();
+        Task<Result<IngredientResponse>> GetByNameAsync(string name);
+        Task<Result<IngredientResponse>> GetByIdAsync(int id);
+        Task<Result<IngredientResponse>> CreateAsync(CreateIngredientRequest ingredient);
+        Task<Result> UpdateAsync(int id, UpdateIngredientRequest ingredient);
+        Task<Result> DeleteAsync(int id);
     }
 }

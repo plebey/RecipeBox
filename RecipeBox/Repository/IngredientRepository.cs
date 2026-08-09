@@ -1,6 +1,7 @@
 ﻿using RecipeBox.Data;
 using RecipeBox.Models;
 using RecipeBox.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace RecipeBox.Repository
 {
@@ -12,55 +13,55 @@ namespace RecipeBox.Repository
             _context = context;
         }
 
-        public IEnumerable<Ingredient> GetAll()
+        public async Task<IEnumerable<Ingredient>> GetAllAsync()
         {
-            return _context.Ingredients.ToList();
+            return await _context.Ingredients.ToListAsync();
         }
 
-        public Ingredient? GetById(int id)
+        public Task<Ingredient?> GetByIdAsync(int id)
         {
-            return _context.Ingredients.FirstOrDefault(rec => rec.Id == id);
+            return _context.Ingredients.FirstOrDefaultAsync(rec => rec.Id == id);
         }
 
-        public Ingredient Create(Ingredient ingred)
+        public async Task<Ingredient> CreateAsync(Ingredient ingred)
         {
             ingred.Id = 0;
             _context.Ingredients.Add(ingred);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ingred;
         }
 
-        public bool Update(int id, Ingredient newIngred)
+        public async Task<bool> UpdateAsync(int id, Ingredient newIngred)
         {
-            var ingred = _context.Ingredients.FirstOrDefault(r => r.Id == id);
+            var ingred = await _context.Ingredients.FirstOrDefaultAsync(r => r.Id == id);
             if (ingred == null)
                 return false; // не нашли
  
             newIngred.Id = ingred.Id;
 
             _context.Entry(ingred).CurrentValues.SetValues(newIngred);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return true;
 
         }
 
-        public bool Delete(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
 
-            var ingred = _context.Ingredients.FirstOrDefault(ing => ing.Id == id);
+            var ingred =await _context.Ingredients.FirstOrDefaultAsync(ing => ing.Id == id);
             if (ingred == null)
                 return false;
             _context.Ingredients.Remove(ingred);
-            _context.SaveChanges();
-            return true; 
+            await _context.SaveChangesAsync();
 
+            return true; 
         }
 
-        public Ingredient? GetByName(string name)
+        public Task<Ingredient?> GetByNameAsync(string name)
         {
-            return _context.Ingredients.Where(ing => ing.Name == name).FirstOrDefault();
+            return _context.Ingredients.FirstOrDefaultAsync(ing => ing.Name == name);
         }
     }
 }

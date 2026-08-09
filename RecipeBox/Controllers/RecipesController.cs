@@ -30,54 +30,54 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var res = _recipeService.GetAll();
+            var res = await _recipeService.GetAllAsync();
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetByID (int id)
+        public async Task<IActionResult> GetByID (int id)
         {
-            var res = _recipeService.GetById(id);
+            var res = await _recipeService.GetByIdAsync(id);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPost]
-        public IActionResult Post(CreateRecipeRequest recipe)
+        public async Task<IActionResult> Post(CreateRecipeRequest recipe)
         {
-            var res = _recipeService.Create(recipe);
+            var res = await _recipeService.CreateAsync(recipe);
             if (res.IsSuccess)
                 return CreatedAtAction(nameof(GetByID), new { id = res.Value.Id }, res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutByID(int id, UpdateRecipeRequest recipe)
+        public async Task<IActionResult> PutByID(int id, UpdateRecipeRequest recipe)
         {
-            var res = _recipeService.Update(id, recipe);
+            var res = await _recipeService.UpdateAsync(id, recipe);
             if (res.IsSuccess)
                 return NoContent();
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteByID(int id)
+        public async Task<IActionResult> DeleteByID(int id)
         {
-            var res = _recipeService.Delete(id);
+            var res = await _recipeService.DeleteAsync(id);
             if (res.IsSuccess)
                 return NoContent();
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpGet("search")]
-        public IActionResult GetByName([FromQuery] string name)
+        public async Task<IActionResult> GetByName([FromQuery] string name)
         {
-            var res = _recipeService.GetByName(name);
+            var res = await _recipeService.GetByNameAsync(name);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
