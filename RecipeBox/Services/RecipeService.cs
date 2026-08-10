@@ -41,22 +41,22 @@ namespace RecipeBox.Services
         }
 
 
-        public async Task<Result<IEnumerable<RecipeResponse>>> GetAllAsync()
+        public async Task<Result<IEnumerable<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken)
         {
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
-            IEnumerable<Recipe> recipes = await _repository.GetAllAsync();
+            IEnumerable<Recipe> recipes = await _repository.GetAllAsync(cancellationToken);
             foreach (Recipe recipe in recipes)
             {
                 recipeRes.Add(BuildRecipeResponse(recipe));
             }
             return Result<IEnumerable<RecipeResponse>>.Success(recipeRes);
         }
-        public async Task<Result<RecipeResponse>> GetByIdAsync(int id)
+        public async Task<Result<RecipeResponse>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
                 return Result<RecipeResponse>.Failure(ErrorType.Validation,
                                                       $"Id must be greater than 0.");
-            var res = await _repository.GetByIdAsync(id);
+            var res = await _repository.GetByIdAsync(id, cancellationToken);
             if (res == null)
                 return Result<RecipeResponse>.Failure(ErrorType.NotFound,
                                                       $"Recipe with id {id} not found.");
@@ -64,7 +64,7 @@ namespace RecipeBox.Services
         }
 
 
-        private async Task <Result<List<RecipeIngredient>>> BuildRecipeIngredientsAsync(IEnumerable<CreateRecipeIngredientRequest> recipeIngredients)
+        private async Task <Result<List<RecipeIngredient>>> BuildRecipeIngredientsAsync(IEnumerable<CreateRecipeIngredientRequest> recipeIngredients, CancellationToken cancellationToken)
         {
             var res = new List<RecipeIngredient>();
             foreach (var recipIng in recipeIngredients)
@@ -79,7 +79,7 @@ namespace RecipeBox.Services
                     return Result<List<RecipeIngredient>>.Failure(ErrorType.Validation,
                                                           "Duplicate ingredient in list.");
 
-                var ingredient = await _ingredientRepository.GetByIdAsync(recipIng.IngredientId);
+                var ingredient = await _ingredientRepository.GetByIdAsync(recipIng.IngredientId, cancellationToken);
                 if (ingredient == null)
                     return Result<List<RecipeIngredient>>.Failure(ErrorType.NotFound,
                                $"Ingredient with id {recipIng.IngredientId} not found.");
@@ -88,7 +88,7 @@ namespace RecipeBox.Services
             return Result<List<RecipeIngredient>>.Success(res);
         }
 
-        public async Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe)
+        public async Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(recipe.Name))
             {
@@ -103,7 +103,7 @@ namespace RecipeBox.Services
             var recipeIngredients = recipe.RecipeIngredients ?? 
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();
 
-            var resBuild = await BuildRecipeIngredientsAsync(recipeIngredients);
+            var resBuild = await BuildRecipeIngredientsAsync(recipeIngredients, cancellationToken);
             if (resBuild.IsSuccess)
                 newRec.RecipeIngredients.AddRange(resBuild.Value!);
             else
@@ -111,11 +111,11 @@ namespace RecipeBox.Services
                 return Result<RecipeResponse>.Failure(resBuild.ErrorType!.Value, resBuild.ErrorMsg!);
             }
             
-            return Result<RecipeResponse>.Success(BuildRecipeResponse(await _repository.CreateAsync(newRec)));
+            return Result<RecipeResponse>.Success(BuildRecipeResponse(await _repository.CreateAsync(newRec, cancellationToken)));
 
         }
 
-        public async Task<Result> UpdateAsync(int id, UpdateRecipeRequest recipe)
+        public async Task<Result> UpdateAsync(int id, UpdateRecipeRequest recipe, CancellationToken cancellationToken)
         {
             if (id <= 0)
                 return Result.Failure(ErrorType.Validation,
@@ -132,7 +132,7 @@ namespace RecipeBox.Services
             var recipeIngredients = recipe.RecipeIngredients ??
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();
 
-            var resBuild = await BuildRecipeIngredientsAsync(recipeIngredients);
+            var resBuild = await BuildRecipeIngredientsAsync(recipeIngredients, cancellationToken);
             if (resBuild.IsSuccess)
                 newRec.RecipeIngredients.AddRange(resBuild.Value!);
             else
@@ -140,22 +140,22 @@ namespace RecipeBox.Services
                 return Result.Failure(resBuild.ErrorType!.Value, resBuild.ErrorMsg!);
             }
 
-            return await _repository.UpdateAsync(id, newRec) ?
+            return await _repository.UpdateAsync(id, newRec, cancellationToken) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,
                                   $"Recipe with id <{id}> was not found.");
         }
-        public async Task<Result> DeleteAsync(int id)
+        public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
                 return Result.Failure(ErrorType.Validation,
                                                       $"Id must be greater than 0.");
-            return await _repository.DeleteAsync(id) ?
+            return await _repository.DeleteAsync(id, cancellationToken) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,
                                   $"Recipe with id <{id}> was not found.");
         }
-        public async Task<Result<IEnumerable<RecipeResponse>>> GetByNameAsync(string name)
+        public async Task<Result<IEnumerable<RecipeResponse>>> GetByNameAsync(string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return Result<IEnumerable<RecipeResponse>>.Failure
@@ -163,7 +163,7 @@ namespace RecipeBox.Services
                                                             "Name must not be empty.");
 
             name = name.Trim();
-            var recipesByNames = await _repository.GetByNameAsync(name);
+            var recipesByNames = await _repository.GetByNameAsync(name, cancellationToken);
 
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
 

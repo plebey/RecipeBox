@@ -30,9 +30,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var res = await _ingredientService.GetAllAsync();
+            var res = await _ingredientService.GetAllAsync(cancellationToken);
             if (res.IsSuccess)
                 return Ok(res.Value);
 
@@ -40,9 +40,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByID(int id)
+        public async Task<IActionResult> GetByID(int id, CancellationToken cancellationToken)
         {
-            var res = await _ingredientService.GetByIdAsync(id);
+            var res = await _ingredientService.GetByIdAsync(id, cancellationToken);
             if (res.IsSuccess)
                 return Ok(res.Value);
 
@@ -50,18 +50,18 @@ namespace RecipeBox.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(CreateIngredientRequest ingredient)
+        public async Task<IActionResult> Post(CreateIngredientRequest ingredient, CancellationToken cancellationToken)
         {
-            var res = await _ingredientService.CreateAsync(ingredient);
+            var res = await _ingredientService.CreateAsync(ingredient, cancellationToken);
             if (res.IsSuccess)
                 return CreatedAtAction(nameof(GetByID), new { id = res.Value.Id }, res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutByID(int id, UpdateIngredientRequest ingredient)
+        public async Task<IActionResult> PutByID(int id, UpdateIngredientRequest ingredient, CancellationToken cancellationToken)
         {
-            var res = await _ingredientService.UpdateAsync(id, ingredient);
+            var res = await _ingredientService.UpdateAsync(id, ingredient, cancellationToken);
 
             if (res.IsSuccess)
                 return NoContent();
@@ -70,9 +70,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteByID(int id)
+        public async Task<IActionResult> DeleteByID(int id, CancellationToken cancellationToken)
         {
-            var res = await _ingredientService.DeleteAsync(id);
+            var res = await _ingredientService.DeleteAsync(id, cancellationToken);
             if (res.IsSuccess)
                 return NoContent();
 
@@ -81,9 +81,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> GetByName([FromQuery] string name)
+        public async Task<IActionResult> GetByName([FromQuery] string name, CancellationToken cancellationToken)
         {
-            var res = await _ingredientService.GetByNameAsync(name);
+            var res = await _ingredientService.GetByNameAsync(name, cancellationToken);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);

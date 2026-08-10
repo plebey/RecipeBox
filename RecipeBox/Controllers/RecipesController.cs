@@ -30,54 +30,54 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var res = await _recipeService.GetAllAsync();
+            var res = await _recipeService.GetAllAsync(cancellationToken);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByID (int id)
+        public async Task<IActionResult> GetByID (int id, CancellationToken cancellationToken)
         {
-            var res = await _recipeService.GetByIdAsync(id);
+            var res = await _recipeService.GetByIdAsync(id, cancellationToken);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(CreateRecipeRequest recipe)
+        public async Task<IActionResult> Post(CreateRecipeRequest recipe, CancellationToken cancellationToken)
         {
-            var res = await _recipeService.CreateAsync(recipe);
+            var res = await _recipeService.CreateAsync(recipe, cancellationToken);
             if (res.IsSuccess)
                 return CreatedAtAction(nameof(GetByID), new { id = res.Value.Id }, res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutByID(int id, UpdateRecipeRequest recipe)
+        public async Task<IActionResult> PutByID(int id, UpdateRecipeRequest recipe, CancellationToken cancellationToken)
         {
-            var res = await _recipeService.UpdateAsync(id, recipe);
+            var res = await _recipeService.UpdateAsync(id, recipe, cancellationToken);
             if (res.IsSuccess)
                 return NoContent();
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteByID(int id)
+        public async Task<IActionResult> DeleteByID(int id, CancellationToken cancellationToken)
         {
-            var res = await _recipeService.DeleteAsync(id);
+            var res = await _recipeService.DeleteAsync(id, cancellationToken);
             if (res.IsSuccess)
                 return NoContent();
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> GetByName([FromQuery] string name)
+        public async Task<IActionResult> GetByName([FromQuery] string name, CancellationToken cancellationToken)
         {
-            var res = await _recipeService.GetByNameAsync(name);
+            var res = await _recipeService.GetByNameAsync(name, cancellationToken);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);

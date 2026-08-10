@@ -18,11 +18,11 @@ namespace RecipeBox.Tests.UnitTests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>()))
-                    .ReturnsAsync((Recipe i) => i);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(1))
+            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None))
+                    .ReturnsAsync((Recipe i, CancellationToken token) => i);
+            mockIngrRepo.Setup(s => s.GetByIdAsync(1, CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Ингред1", "Кг."));
-            mockIngrRepo.Setup(s => s.GetByIdAsync(3))
+            mockIngrRepo.Setup(s => s.GetByIdAsync(3, CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Ингред3", "г."));
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
@@ -31,13 +31,13 @@ namespace RecipeBox.Tests.UnitTests
             recIngReq.Add(new CreateRecipeIngredientRequest { IngredientId = 3, Amount = 2.0m });
             var recReq = new CreateRecipeRequest { Name = "Борщ", RecipeIngredients = recIngReq };
 
-            var res = await service.CreateAsync(recReq);
+            var res = await service.CreateAsync(recReq, CancellationToken.None);
 
             Assert.NotNull(res.Value);
             Assert.Equal("Ингред1", res.Value.Ingredients[0].IngredientName);
             Assert.Equal("Ингред3", res.Value.Ingredients[1].IngredientName);
-            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>()), Times.Once);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Exactly(2));
+            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None), Times.Once);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Exactly(2));
 
         }
 
@@ -47,9 +47,9 @@ namespace RecipeBox.Tests.UnitTests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>()))
-                    .ReturnsAsync((Recipe i) => i);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None))
+                    .ReturnsAsync((Recipe i, CancellationToken token) => i);
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync((Ingredient?)null);
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
@@ -58,12 +58,12 @@ namespace RecipeBox.Tests.UnitTests
             recIngReq.Add(new CreateRecipeIngredientRequest { IngredientId = 3, Amount = 2.0m });
             var recReq = new CreateRecipeRequest { Name = "Борщ" , RecipeIngredients = recIngReq};
 
-            var res = await service.CreateAsync(recReq);
+            var res = await service.CreateAsync(recReq, CancellationToken.None);
 
             Assert.Null(res.Value);
             Assert.Equal(ErrorType.NotFound, res.ErrorType);
-            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>()), Times.Never);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
+            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None), Times.Never);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Once);
 
         }
 
@@ -73,19 +73,19 @@ namespace RecipeBox.Tests.UnitTests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>()))
-                    .ReturnsAsync((Recipe i) => i);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None))
+                    .ReturnsAsync((Recipe i, CancellationToken token) => i);
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Ингред1", "Кг."));
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
             var recReq = new CreateRecipeRequest { Name = "Борщ"};
 
-            var res = await service.CreateAsync(recReq);
+            var res = await service.CreateAsync(recReq, CancellationToken.None);
 
             Assert.Equal("Борщ", res.Value.Name);
-            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>()), Times.Once);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Never);
+            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None), Times.Once);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Never);
 
         }
 
@@ -95,9 +95,9 @@ namespace RecipeBox.Tests.UnitTests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>()))
-                    .ReturnsAsync((Recipe i) => i);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None))
+                    .ReturnsAsync((Recipe i, CancellationToken token) => i);
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Ингред1", "Кг."));
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
@@ -106,11 +106,11 @@ namespace RecipeBox.Tests.UnitTests
             recIngReq.Add(new CreateRecipeIngredientRequest { IngredientId = 2, Amount = 3.0m });
             var recReq = new CreateRecipeRequest { Name = "Борщ", RecipeIngredients = recIngReq };
 
-            var res = await service.CreateAsync(recReq);
+            var res = await service.CreateAsync(recReq, CancellationToken.None);
 
             Assert.Equal("Борщ", res.Value.Name);
-            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>()), Times.Once);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Exactly(2));
+            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None), Times.Once);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Exactly(2));
 
         }
 
@@ -124,20 +124,20 @@ namespace RecipeBox.Tests.UnitTests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>()))
-                    .ReturnsAsync((Recipe i) => i);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None))
+                    .ReturnsAsync((Recipe i, CancellationToken token) => i);
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Ингред1", "Кг."));
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
             var recReq = new CreateRecipeRequest{Name = name};
 
-            var res = await service.CreateAsync(recReq);
+            var res = await service.CreateAsync(recReq, CancellationToken.None);
 
             Assert.Null(res.Value);
             Assert.Equal(ErrorType.Validation, res.ErrorType);
-            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>()), Times.Never);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Never);
+            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None), Times.Never);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Never);
 
         }
         // проверка на пустые значения имени и с корректными данными (вызов create 0 раз)
@@ -148,34 +148,34 @@ namespace RecipeBox.Tests.UnitTests
         public async Task Update_WithEmptyName_ReturnsErrorValidation(string name)
         {
             var mockRepo = new Mock<IRecipeRepository>();
-            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>()))
+            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>(), CancellationToken.None))
                     .ReturnsAsync(true);
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Соль", "г"));
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
             var updRecReq = new UpdateRecipeRequest { Name = name };
 
-            var res = await service.UpdateAsync(1, updRecReq);
+            var res = await service.UpdateAsync(1, updRecReq, CancellationToken.None);
 
             Assert.Equal(ErrorType.Validation, res.ErrorType);
-            mockRepo.Verify(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>()), Times.Never);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Never);
+            mockRepo.Verify(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>(), CancellationToken.None), Times.Never);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Never);
         }
         // проверка при несуществующем ингредиенте (вызов create 0 раз)
         [Fact]
         public async Task Update_WithInvalidIngredient_ReturnsErrorNotFound()
         {
             var mockRepo = new Mock<IRecipeRepository>();
-            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>()))
+            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>(), CancellationToken.None))
                     .ReturnsAsync(false);
 
             var mockIngrRepo = new Mock<IIngredientRepository>();
             var testIngredient = new Ingredient("Соль", "г");
-            mockIngrRepo.Setup(s => s.GetByIdAsync(1))
+            mockIngrRepo.Setup(s => s.GetByIdAsync(1, CancellationToken.None))
                            .ReturnsAsync(testIngredient);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(3))
+            mockIngrRepo.Setup(s => s.GetByIdAsync(3, CancellationToken.None))
                            .ReturnsAsync((Ingredient?)null);
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
@@ -184,23 +184,23 @@ namespace RecipeBox.Tests.UnitTests
             ingrReqList.Add(new CreateRecipeIngredientRequest { IngredientId = 3 , Amount = 1.0m});
             var updRecReq = new UpdateRecipeRequest { Name = "name", RecipeIngredients = ingrReqList };
 
-            var res = await service.UpdateAsync(1, updRecReq);
+            var res = await service.UpdateAsync(1, updRecReq, CancellationToken.None);
 
             Assert.Equal(ErrorType.NotFound, res.ErrorType);
-            mockRepo.Verify(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>()), Times.Never);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Exactly(2));
+            mockRepo.Verify(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>(), CancellationToken.None), Times.Never);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Exactly(2));
         }
         // проверка со всеми корректными данными (вызов create 1 раз)
         [Fact]
         public async Task Update_WithValidIngredient_ReturnsSuccess()
         {
             var mockRepo = new Mock<IRecipeRepository>();
-            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>()))
+            mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>(), CancellationToken.None))
                     .ReturnsAsync(true);
 
             var mockIngrRepo = new Mock<IIngredientRepository>();
             var testIngredient = new Ingredient("Соль", "г");
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync(testIngredient);
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
@@ -209,11 +209,11 @@ namespace RecipeBox.Tests.UnitTests
             ingrReqList.Add(new CreateRecipeIngredientRequest { IngredientId = 3, Amount = 1.0m });
             var updRecReq = new UpdateRecipeRequest { Name = "name", RecipeIngredients = ingrReqList };
 
-            var res = await service.UpdateAsync(1, updRecReq);
+            var res = await service.UpdateAsync(1, updRecReq, CancellationToken.None);
 
             Assert.True(res.IsSuccess);
-            mockRepo.Verify(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>()), Times.Once);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Exactly(2));
+            mockRepo.Verify(repo => repo.UpdateAsync(It.IsAny<int>(), It.IsAny<Recipe>(), CancellationToken.None), Times.Once);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None), Times.Exactly(2));
         }
 
         // проверка на возврат пустого значения при пустом/отсутствующем имени
@@ -224,16 +224,16 @@ namespace RecipeBox.Tests.UnitTests
         public async Task GetByName_WithEmptyNameOrNoMatches_ReturnsErrorValidation(string name)
         {
             var mockRepo = new Mock<IRecipeRepository>();
-            mockRepo.Setup(repo => repo.GetByNameAsync(It.IsAny<string>()))
+            mockRepo.Setup(repo => repo.GetByNameAsync(It.IsAny<string>(), CancellationToken.None))
                     .ReturnsAsync(Enumerable.Empty<Recipe>());
             var mockIngrRepo = new Mock<IIngredientRepository>();
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
 
-            var res = await service.GetByNameAsync(name);
+            var res = await service.GetByNameAsync(name, CancellationToken.None);
 
             Assert.Equal(ErrorType.Validation, res.ErrorType);
-            mockRepo.Verify(repo => repo.GetByNameAsync(It.IsAny<string>()), Times.Never);
+            mockRepo.Verify(repo => repo.GetByNameAsync(It.IsAny<string>(), CancellationToken.None), Times.Never);
         }
 
         // проверка на возврат пустого значения при отсутствии совпадений
@@ -242,18 +242,18 @@ namespace RecipeBox.Tests.UnitTests
         public async Task GetByName_WithNoMatches_ReturnsEmptyEnumerableResponse(string name)
         {
             var mockRepo = new Mock<IRecipeRepository>();
-            mockRepo.Setup(repo => repo.GetByNameAsync(It.IsAny<string>()))
+            mockRepo.Setup(repo => repo.GetByNameAsync(It.IsAny<string>(), CancellationToken.None))
                     .ReturnsAsync(Enumerable.Empty<Recipe>());
             var mockIngrRepo = new Mock<IIngredientRepository>();
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
 
-            var res = await service.GetByNameAsync(name);
+            var res = await service.GetByNameAsync(name, CancellationToken.None);
 
 
             Assert.True(res.IsSuccess);
             Assert.Equal(Enumerable.Empty<RecipeResponse>(), res.Value);
-            mockRepo.Verify(repo => repo.GetByNameAsync(It.IsAny<string>()), Times.Once);
+            mockRepo.Verify(repo => repo.GetByNameAsync(It.IsAny<string>(), CancellationToken.None), Times.Once);
         }
 
 
@@ -263,9 +263,9 @@ namespace RecipeBox.Tests.UnitTests
         {
             var mockRepo = new Mock<IRecipeRepository>();
             var mockIngrRepo = new Mock<IIngredientRepository>();
-            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>()))
-                    .ReturnsAsync((Recipe i) => i);
-            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
+            mockRepo.Setup(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None))
+                    .ReturnsAsync((Recipe i, CancellationToken token) => i);
+            mockIngrRepo.Setup(s => s.GetByIdAsync(It.IsAny<int>(), CancellationToken.None))
                            .ReturnsAsync(new Ingredient("Ингред1", "Кг."));
 
             var service = new RecipeService(mockRepo.Object, mockIngrRepo.Object);
@@ -274,12 +274,12 @@ namespace RecipeBox.Tests.UnitTests
             ingrReqList.Add(new CreateRecipeIngredientRequest { IngredientId = 1, Amount = 1.0m });
             var recReq = new CreateRecipeRequest { Name = "recipeName", RecipeIngredients = ingrReqList };
 
-            var res = await service.CreateAsync(recReq);
+            var res = await service.CreateAsync(recReq, CancellationToken.None);
 
             Assert.Null(res.Value);
             Assert.Equal(ErrorType.Validation, res.ErrorType);
-            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>()), Times.Never);
-            mockIngrRepo.Verify(s => s.GetByIdAsync(1), Times.Once);
+            mockRepo.Verify(repo => repo.CreateAsync(It.IsAny<Recipe>(), CancellationToken.None), Times.Never);
+            mockIngrRepo.Verify(s => s.GetByIdAsync(1, CancellationToken.None), Times.Once);
         }
     }
 }

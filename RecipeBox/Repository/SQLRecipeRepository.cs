@@ -13,42 +13,42 @@ namespace RecipeBox.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Recipe>> GetAllAsync()
+        public async Task<IEnumerable<Recipe>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _context.Recipes.Include(r => r.RecipeIngredients)
                                    .ThenInclude(i=> i.Ingredient)
-                                   .ToListAsync();
+                                   .ToListAsync(cancellationToken);
         }
 
-        public Task<Recipe?> GetByIdAsync(int id)
+        public Task<Recipe?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             return _context.Recipes.Include(r => r.RecipeIngredients)
                                    .ThenInclude(i => i.Ingredient)
-                                   .FirstOrDefaultAsync(rec => rec.Id == id);
+                                   .FirstOrDefaultAsync(rec => rec.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<Recipe>> GetByNameAsync(string name)
+        public async Task<IEnumerable<Recipe>> GetByNameAsync(string name, CancellationToken cancellationToken)
         {
             return await _context.Recipes.Include(r => r.RecipeIngredients)
                                    .ThenInclude(i => i.Ingredient)
-                                   .Where(rec => rec.Name == name).ToListAsync();
+                                   .Where(rec => rec.Name == name).ToListAsync(cancellationToken);
         }
 
-        public async Task<Recipe> CreateAsync(Recipe recipe)
+        public async Task<Recipe> CreateAsync(Recipe recipe, CancellationToken cancellationToken)
         {
             recipe.Id = 0;
             _context.Recipes.Add(recipe);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return recipe;
         }
 
-        public async Task<bool> UpdateAsync(int id, Recipe newRecipe)
+        public async Task<bool> UpdateAsync(int id, Recipe newRecipe, CancellationToken cancellationToken)
         {
 
             var recipe = await _context.Recipes
                         .Include(r=>r.RecipeIngredients)
-                        .FirstOrDefaultAsync(r => r.Id == id);
+                        .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
             if (recipe == null)
                 return false; // не нашли
 
@@ -62,20 +62,20 @@ namespace RecipeBox.Repository
                 recipe.RecipeIngredients.Add(recIng);
             }
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return true;
 
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
         {
 
-            var recipe = await _context.Recipes.FirstOrDefaultAsync(rec => rec.Id == id);
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(rec => rec.Id == id, cancellationToken);
             if (recipe == null)
                 return false;
             _context.Recipes.Remove(recipe);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
             return true;
 
         }

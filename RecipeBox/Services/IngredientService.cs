@@ -22,11 +22,11 @@ namespace RecipeBox.Services
                                           ingredient.PurchaseURL);
         }
 
-        public async Task<Result<IEnumerable<IngredientResponse>>> GetAllAsync()
+        public async Task<Result<IEnumerable<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken)
         {
             //TODO: переписать через DTO на выдачу без рецептов?
             List<IngredientResponse> ingResp = new List<IngredientResponse>();
-            IEnumerable<Ingredient> ingredients = await _repository.GetAllAsync();
+            IEnumerable<Ingredient> ingredients = await _repository.GetAllAsync(cancellationToken);
 
             foreach(var ingredient in ingredients)
             {
@@ -35,20 +35,20 @@ namespace RecipeBox.Services
 
             return Result<IEnumerable<IngredientResponse>>.Success(ingResp);
         }
-        public async Task<Result<IngredientResponse>> GetByNameAsync(string name)
+        public async Task<Result<IngredientResponse>> GetByNameAsync(string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return Result<IngredientResponse>.Failure(ErrorType.Validation,
                                       "Name must not be empty.");
             name = name.Trim();
-            var res = await _repository.GetByNameAsync(name);
+            var res = await _repository.GetByNameAsync(name, cancellationToken);
             if (res == null)
                 return Result<IngredientResponse>.Failure(ErrorType.NotFound,
                                   $"Ingredient with name <{name}> was not found.");
             else
                 return Result<IngredientResponse>.Success(BuildIngredientResponse(res));
         }
-        public async Task<Result<IngredientResponse>> GetByIdAsync(int id)
+        public async Task<Result<IngredientResponse>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
@@ -56,29 +56,29 @@ namespace RecipeBox.Services
                     ErrorType.Validation,
                     "Ingredient id must be greater than zero.");
             }
-            var res = await _repository.GetByIdAsync(id);
+            var res = await _repository.GetByIdAsync(id, cancellationToken);
             if (res == null)
                 return Result<IngredientResponse>.Failure(ErrorType.NotFound,
                                   $"Ingredient with id <{id}> was not found.");
             else
                 return Result<IngredientResponse>.Success(BuildIngredientResponse(res));
         }
-        public async Task<Result<IngredientResponse>> CreateAsync(CreateIngredientRequest ingredientReq)
+        public async Task<Result<IngredientResponse>> CreateAsync(CreateIngredientRequest ingredientReq, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(ingredientReq.Name) || string.IsNullOrWhiteSpace(ingredientReq.Unit))
                 return Result<IngredientResponse>.Failure(ErrorType.Validation,
                                "Name and Unit must not be empty.");
             var name = ingredientReq.Name.Trim();
             var unit = ingredientReq.Unit.Trim();
-            if ((await _repository.GetByNameAsync(name)) != null)
+            if ((await _repository.GetByNameAsync(name, cancellationToken)) != null)
                 return Result<IngredientResponse>.Failure(ErrorType.Conflict,
                                       $"Ingredient with name \"{name}\" already exists.");
             var newIngr = new Ingredient(name, unit, ingredientReq.PurchaseURL);
 
-            var res = await _repository.CreateAsync(newIngr);
+            var res = await _repository.CreateAsync(newIngr, cancellationToken);
             return Result<IngredientResponse>.Success(BuildIngredientResponse(res));
         }
-        public async Task<Result> UpdateAsync(int id, UpdateIngredientRequest ingredientReq)
+        public async Task<Result> UpdateAsync(int id, UpdateIngredientRequest ingredientReq, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
@@ -92,7 +92,7 @@ namespace RecipeBox.Services
             var name = ingredientReq.Name.Trim();
             var unit = ingredientReq.Unit.Trim();
 
-            var withSameName = await _repository.GetByNameAsync(name);
+            var withSameName = await _repository.GetByNameAsync(name, cancellationToken);
             if (withSameName != null &&
                 withSameName.Id != id)
                 return Result.Failure(ErrorType.Conflict,
@@ -100,12 +100,12 @@ namespace RecipeBox.Services
 
             var newIngr = new Ingredient(name, unit, ingredientReq.PurchaseURL);
 
-            return await _repository.UpdateAsync(id, newIngr) ?
+            return await _repository.UpdateAsync(id, newIngr, cancellationToken) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,
                                   $"Ingredient with id <{id}> was not found.");
         }
-        public async Task<Result> DeleteAsync(int id)
+        public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
@@ -113,7 +113,7 @@ namespace RecipeBox.Services
                     ErrorType.Validation,
                     "Ingredient id must be greater than zero.");
             }
-            return await _repository.DeleteAsync(id) ?
+            return await _repository.DeleteAsync(id, cancellationToken) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,
                                   $"Ingredient with id <{id}> was not found.");

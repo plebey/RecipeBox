@@ -6,11 +6,11 @@ namespace RecipeBox.Services.Interfaces
 {
     public interface IRecipeService
     {
-        Task<Result<IEnumerable<RecipeResponse>>> GetAllAsync();
-        Task<Result<RecipeResponse>> GetByIdAsync(int id);
-        Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe);
-        Task<Result> UpdateAsync(int id, UpdateRecipeRequest recipe);
-        Task<Result> DeleteAsync(int id);
-        Task<Result<IEnumerable<RecipeResponse>>> GetByNameAsync(string name);
+        Task<Result<IEnumerable<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken);
+        Task<Result<RecipeResponse>> GetByIdAsync(int id, CancellationToken cancellationToken);
+        Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe, CancellationToken cancellationToken);
+        Task<Result> UpdateAsync(int id, UpdateRecipeRequest recipe, CancellationToken cancellationToken);
+        Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
+        Task<Result<IEnumerable<RecipeResponse>>> GetByNameAsync(string name, CancellationToken cancellationToken);
     }
 }
