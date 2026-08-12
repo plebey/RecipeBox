@@ -48,6 +48,8 @@ namespace RecipeBox.Services
             else
                 return Result<IngredientResponse>.Success(BuildIngredientResponse(res));
         }
+
+
         public async Task<Result<IngredientResponse>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
@@ -63,6 +65,18 @@ namespace RecipeBox.Services
             else
                 return Result<IngredientResponse>.Success(BuildIngredientResponse(res));
         }
+
+
+        private bool ValidateIngredNameUnitURLLength(string name, string unit, string? purchaseURL)
+        {
+            if (purchaseURL != null) 
+                if (purchaseURL.Length > Constraints.IngredientURLMaxLength)
+                    return false;
+            if (name.Length > Constraints.IngredientNameMaxLength || unit.Length > Constraints.IngredientUnitMaxLength)
+                return false;
+            return true;
+        }
+
         public async Task<Result<IngredientResponse>> CreateAsync(CreateIngredientRequest ingredientReq, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(ingredientReq.Name) || string.IsNullOrWhiteSpace(ingredientReq.Unit))
@@ -70,10 +84,16 @@ namespace RecipeBox.Services
                                "Name and Unit must not be empty.");
             var name = ingredientReq.Name.Trim();
             var unit = ingredientReq.Unit.Trim();
+            var purchaseURL = ingredientReq.PurchaseURL != null ? ingredientReq.PurchaseURL.Trim() : null;
+
+            if (!ValidateIngredNameUnitURLLength(name, unit, purchaseURL))
+                return Result<IngredientResponse>.Failure(ErrorType.Validation,
+                               "One or more parameters are too long.");
+
             if ((await _repository.GetByNameAsync(name, cancellationToken)) != null)
                 return Result<IngredientResponse>.Failure(ErrorType.Conflict,
                                       $"Ingredient with name \"{name}\" already exists.");
-            var newIngr = new Ingredient(name, unit, ingredientReq.PurchaseURL);
+            var newIngr = new Ingredient(name, unit, purchaseURL);
 
             var res = await _repository.CreateAsync(newIngr, cancellationToken);
             return Result<IngredientResponse>.Success(BuildIngredientResponse(res));
@@ -91,6 +111,11 @@ namespace RecipeBox.Services
                                       "Name and Unit must not be empty.");
             var name = ingredientReq.Name.Trim();
             var unit = ingredientReq.Unit.Trim();
+            var purchaseURL = ingredientReq.PurchaseURL != null ? ingredientReq.PurchaseURL.Trim() : null;
+
+            if (!ValidateIngredNameUnitURLLength(name, unit, purchaseURL))
+                return Result.Failure(ErrorType.Validation,
+                               "One or more parameters are too long.");
 
             var withSameName = await _repository.GetByNameAsync(name, cancellationToken);
             if (withSameName != null &&

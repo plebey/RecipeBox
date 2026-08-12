@@ -21,8 +21,6 @@ namespace RecipeBox.Services
 
         private RecipeResponse BuildRecipeResponse(Recipe recipe)
         {
-            if (recipe == null)
-                return null;
             RecipeResponse response = new RecipeResponse();
             response.Id = recipe.Id;
             response.Name = recipe.Name;
@@ -88,6 +86,19 @@ namespace RecipeBox.Services
             return Result<List<RecipeIngredient>>.Success(res);
         }
 
+        private bool ValidateNameDescriptionURLLength(string name, string? description, string? url)
+        {
+            if (url != null)
+                if (url.Length > Constraints.RecipeURLMaxLength)
+                    return false;
+            if (description != null)
+                if (description.Length > Constraints.RecipeDescriptionMaxLength)
+                    return false;
+            if (name.Length > Constraints.RecipeNameMaxLength)
+                return false;
+            return true;
+        }
+
         public async Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(recipe.Name))
@@ -96,8 +107,16 @@ namespace RecipeBox.Services
                                "Name must not be empty.");
             }
             var name = recipe.Name.Trim();
+            var description = recipe.Description != null ? recipe.Description.Trim() : null;
+            var recipeURL = recipe.RecipeURL != null ? recipe.RecipeURL.Trim() : null;
 
-            Recipe newRec = new Recipe(name, recipe.Description, recipe.RecipeURL);
+            if (!ValidateNameDescriptionURLLength(name, description, recipeURL))
+            {
+                return Result<RecipeResponse>.Failure(ErrorType.Validation,
+                               "One or more parameters are too long.");
+            }
+
+            Recipe newRec = new Recipe(name, description, recipeURL);
 
 
             var recipeIngredients = recipe.RecipeIngredients ?? 
@@ -126,8 +145,16 @@ namespace RecipeBox.Services
                                "Name must not be empty.");
             }
             var name = recipe.Name.Trim();
+            var description = recipe.Description != null ? recipe.Description.Trim() : null;
+            var recipeURL = recipe.RecipeURL != null ? recipe.RecipeURL.Trim() : null;
 
-            Recipe newRec = new Recipe(name, recipe.Description, recipe.RecipeURL);
+            if (!ValidateNameDescriptionURLLength(name, description, recipeURL))
+            {
+                return Result.Failure(ErrorType.Validation,
+                               "One or more parameters are too long.");
+            }
+
+            Recipe newRec = new Recipe(name, description, recipeURL);
 
             var recipeIngredients = recipe.RecipeIngredients ??
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();

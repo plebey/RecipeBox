@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBox.Data;
 
@@ -10,9 +11,11 @@ using RecipeBox.Data;
 namespace RecipeBox.Migrations
 {
     [DbContext(typeof(DBContextRecipeBox))]
-    partial class DBContextRecipeBoxModelSnapshot : ModelSnapshot
+    [Migration("20260812093912_AddIngredientConstraints")]
+    partial class AddIngredientConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RecipeBox.Common;
 using RecipeBox.Models;
 
 namespace RecipeBox.Data
@@ -23,6 +24,17 @@ namespace RecipeBox.Data
                 .HasKey(ri => new { ri.RecipeId, ri.IngredientId});
 
             modelBuilder.Entity<RecipeIngredient>()
+                .Property(ri => ri.Amount)
+                .HasPrecision(10, 3);
+
+
+            modelBuilder.Entity<RecipeIngredient>()
+                .ToTable(t => t.HasCheckConstraint(
+                                "CK_RecipeIngredient_Amount_Positive",
+                                "[Amount] > 0"));
+
+
+            modelBuilder.Entity<RecipeIngredient>()
                 .HasOne(ri => ri.Recipe)
                 .WithMany(r => r.RecipeIngredients)
                 .HasForeignKey(ri => ri.RecipeId)
@@ -37,6 +49,34 @@ namespace RecipeBox.Data
             modelBuilder.Entity<Ingredient>()
                 .HasIndex(i => i.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<Ingredient>()
+                .Property(i => i.Name)
+                .HasMaxLength(Constraints.IngredientNameMaxLength)
+                .IsRequired();
+
+            modelBuilder.Entity<Ingredient>()
+                .Property(i => i.Unit)
+                .HasMaxLength(Constraints.IngredientUnitMaxLength)
+                .IsRequired();
+
+            modelBuilder.Entity<Ingredient>()
+                .Property(i => i.PurchaseURL)
+                .HasMaxLength(Constraints.IngredientURLMaxLength);
+
+            modelBuilder.Entity<Recipe>()
+                .Property(i => i.Name)
+                .HasMaxLength(Constraints.RecipeNameMaxLength)
+                .IsRequired();
+
+            modelBuilder.Entity<Recipe>()
+                .Property(i => i.RecipeURL)
+                .HasMaxLength(Constraints.RecipeURLMaxLength);
+
+            modelBuilder.Entity<Recipe>()
+                .Property(i => i.Description)
+                .HasMaxLength(Constraints.RecipeDescriptionMaxLength);
+
         }
     }
 }
