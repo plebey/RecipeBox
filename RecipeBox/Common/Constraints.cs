@@ -10,5 +10,8 @@
         public const int IngredientUnitMaxLength = 20;
         public const int IngredientURLMaxLength = 200;
 
+        public const int IngredientAmountDigitsLength = 10;
+        public const int IngredientAmountAfterComma = 3;
+
     }
 }

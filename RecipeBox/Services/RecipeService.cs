@@ -99,6 +99,17 @@ namespace RecipeBox.Services
             return true;
         }
 
+        private bool ValidateIngredientAmount(decimal amount)
+        {
+            if (amount <= 0 ||
+                decimal.Truncate(decimal.Abs(amount)) >= 10_000_000m ||
+                decimal.Round(amount, 3) != amount)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<Result<RecipeResponse>> CreateAsync(CreateRecipeRequest recipe, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(recipe.Name))
@@ -118,6 +129,13 @@ namespace RecipeBox.Services
 
             Recipe newRec = new Recipe(name, description, recipeURL);
 
+
+            foreach (var ingred in recipe.RecipeIngredients)
+            {
+                if (!ValidateIngredientAmount(ingred.Amount))
+                    return Result<RecipeResponse>.Failure(ErrorType.Validation,
+                               "Amount must be in (0, 10000000) and 3 digits after comma.");
+            }
 
             var recipeIngredients = recipe.RecipeIngredients ?? 
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();

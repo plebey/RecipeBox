@@ -25,7 +25,7 @@ namespace RecipeBox.Data
 
             modelBuilder.Entity<RecipeIngredient>()
                 .Property(ri => ri.Amount)
-                .HasPrecision(10, 3);
+                .HasPrecision(Constraints.IngredientAmountDigitsLength, Constraints.IngredientAmountAfterComma);
 
 
             modelBuilder.Entity<RecipeIngredient>()
