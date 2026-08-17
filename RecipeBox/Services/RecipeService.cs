@@ -40,7 +40,7 @@ namespace RecipeBox.Services
         }
 
 
-        public async Task<Result<PagedResult<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
+        public async Task<Result<PagedResult<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name)
         { 
             if (page <= 0)
             {
@@ -56,8 +56,13 @@ namespace RecipeBox.Services
                     "Page size must be between 1 and 100.");
             }
 
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                name = name.Trim();
+            }
+
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
-            var pagedRecipes = await _repository.GetAllAsync(cancellationToken, page, pageSize);
+            var pagedRecipes = await _repository.GetAllAsync(cancellationToken, page, pageSize, name);
 
             foreach (Recipe recipe in pagedRecipes.Items)
             {

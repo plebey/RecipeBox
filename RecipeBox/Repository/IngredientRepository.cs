@@ -14,14 +14,21 @@ namespace RecipeBox.Repository
             _context = context;
         }
 
-        public async Task<PagedResult<Ingredient>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
+        public async Task<PagedResult<Ingredient>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name)
         {
-            var totalCount = await _context.Ingredients.CountAsync(cancellationToken);
-            var ingredList = await _context.Ingredients
-                                 .OrderBy(x => x.Id)
-                                 .Skip((page - 1) * pageSize)
-                                 .Take(pageSize)
-                                 .ToListAsync(cancellationToken);
+            IQueryable<Ingredient> query = _context.Ingredients;
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(x => x.Name.Contains(name));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var ingredList = await query
+                                   .OrderBy(x => x.Id)
+                                   .Skip((page - 1) * pageSize)
+                                   .Take(pageSize)
+                                   .ToListAsync(cancellationToken);
             return new PagedResult<Ingredient>
                                 {
                                     Items = ingredList,

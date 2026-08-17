@@ -23,7 +23,7 @@ namespace RecipeBox.Services
                                           ingredient.PurchaseURL);
         }
 
-        public async Task<Result<PagedResult<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
+        public async Task<Result<PagedResult<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name)
         {
             //TODO: переписать через DTO на выдачу без рецептов?
             List<IngredientResponse> ingResp = new List<IngredientResponse>();
@@ -40,7 +40,13 @@ namespace RecipeBox.Services
                     ErrorType.Validation,
                     "Page size must be between 1 and 100.");
             }
-            var pagedIngreds = await _repository.GetAllAsync(cancellationToken, page, pageSize);
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                name = name.Trim();
+            }
+
+            var pagedIngreds = await _repository.GetAllAsync(cancellationToken, page, pageSize, name);
 
             foreach(var ingredient in pagedIngreds.Items)
             {

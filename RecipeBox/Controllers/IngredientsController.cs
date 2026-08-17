@@ -30,9 +30,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken, [FromQuery] string? name, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var res = await _ingredientService.GetAllAsync(cancellationToken, page, pageSize);
+            var res = await _ingredientService.GetAllAsync(cancellationToken, page, pageSize, name);
             if (res.IsSuccess)
                 return Ok(res.Value);
 
@@ -79,7 +79,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
 
         }
-
+        /*
         [HttpGet("search")]
         public async Task<IActionResult> GetByName([FromQuery] string name, CancellationToken cancellationToken)
         {
@@ -88,5 +88,6 @@ namespace RecipeBox.Controllers
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
+        */
     }
 }

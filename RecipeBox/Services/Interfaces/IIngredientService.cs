@@ -7,7 +7,7 @@ namespace RecipeBox.Services.Interfaces
 {
     public interface IIngredientService
     {
-        Task<Result<PagedResult<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize);
+        Task<Result<PagedResult<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name);
         Task<Result<IngredientResponse>> GetByNameAsync(string name, CancellationToken cancellationToken);
         Task<Result<IngredientResponse>> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task<Result<IngredientResponse>> CreateAsync(CreateIngredientRequest ingredient, CancellationToken cancellationToken);

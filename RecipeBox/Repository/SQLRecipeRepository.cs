@@ -14,10 +14,16 @@ namespace RecipeBox.Repository
             _context = context;
         }
 
-        public async Task<PagedResult<Recipe>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
+        public async Task<PagedResult<Recipe>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name)
         {
-            var totalCount = await _context.Recipes.CountAsync(cancellationToken);
-            var recipes = await _context.Recipes
+            IQueryable<Recipe> query = _context.Recipes;
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(x => x.Name.Contains(name));
+            }
+            var totalCount = await query.CountAsync(cancellationToken);
+            var recipes = await query
                                  .Include(r => r.RecipeIngredients)
                                  .ThenInclude(i => i.Ingredient)
                                  .OrderBy(r => r.Id)
