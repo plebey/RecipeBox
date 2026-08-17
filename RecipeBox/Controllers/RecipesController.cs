@@ -30,9 +30,9 @@ namespace RecipeBox.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var res = await _recipeService.GetAllAsync(cancellationToken);
+            var res = await _recipeService.GetAllAsync(cancellationToken, page, pageSize);
             if (res.IsSuccess)
                 return Ok(res.Value);
             return HandleError(res.ErrorType, res.ErrorMsg);

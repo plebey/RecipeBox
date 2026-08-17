@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RecipeBox.Data;
+using RecipeBox.DTOs;
 using RecipeBox.Models;
 using RecipeBox.Repository.Interfaces;
 
@@ -13,11 +14,17 @@ namespace RecipeBox.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Recipe>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<PagedResult<Recipe>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
         {
-            return await _context.Recipes.Include(r => r.RecipeIngredients)
-                                   .ThenInclude(i=> i.Ingredient)
-                                   .ToListAsync(cancellationToken);
+            var totalCount = await _context.Recipes.CountAsync(cancellationToken);
+            var recipes = await _context.Recipes
+                                 .Include(r => r.RecipeIngredients)
+                                 .ThenInclude(i => i.Ingredient)
+                                 .OrderBy(r => r.Id)
+                                 .Skip((page - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .ToListAsync(cancellationToken);
+            return new PagedResult<Recipe> { Items = recipes , Page = page, PageSize = pageSize, TotalCount = totalCount};
         }
 
         public Task<Recipe?> GetByIdAsync(int id, CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 ﻿using RecipeBox.Common;
+using RecipeBox.DTOs;
 using RecipeBox.DTOs.Ingredients;
 using RecipeBox.DTOs.Recipe;
 using RecipeBox.DTOs.RecipeIngredients;
@@ -39,15 +40,38 @@ namespace RecipeBox.Services
         }
 
 
-        public async Task<Result<IEnumerable<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken)
-        {
+        public async Task<Result<PagedResult<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
+        { 
+            if (page <= 0)
+            {
+                return Result<PagedResult<RecipeResponse>>.Failure(
+                    ErrorType.Validation,
+                    "Page must be greater than 0.");
+            }
+
+            if (pageSize <= 0 || pageSize > 100)
+            {
+                return Result<PagedResult<RecipeResponse>>.Failure(
+                    ErrorType.Validation,
+                    "Page size must be between 1 and 100.");
+            }
+
             List<RecipeResponse> recipeRes = new List<RecipeResponse>();
-            IEnumerable<Recipe> recipes = await _repository.GetAllAsync(cancellationToken);
-            foreach (Recipe recipe in recipes)
+            var pagedRecipes = await _repository.GetAllAsync(cancellationToken, page, pageSize);
+
+            foreach (Recipe recipe in pagedRecipes.Items)
             {
                 recipeRes.Add(BuildRecipeResponse(recipe));
             }
-            return Result<IEnumerable<RecipeResponse>>.Success(recipeRes);
+            var recipeResPaged = new PagedResult<RecipeResponse>()
+            { 
+                Items = recipeRes,
+                Page = pagedRecipes.Page,
+                PageSize = pagedRecipes.PageSize,
+                TotalCount = pagedRecipes.TotalCount
+            };
+
+            return Result<PagedResult<RecipeResponse>>.Success(recipeResPaged);
         }
         public async Task<Result<RecipeResponse>> GetByIdAsync(int id, CancellationToken cancellationToken)
         {

@@ -1,4 +1,5 @@
 ﻿using RecipeBox.Common;
+using RecipeBox.DTOs;
 using RecipeBox.DTOs.Ingredients;
 using RecipeBox.DTOs.Recipe;
 using RecipeBox.Models;
@@ -22,18 +23,39 @@ namespace RecipeBox.Services
                                           ingredient.PurchaseURL);
         }
 
-        public async Task<Result<IEnumerable<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize)
         {
             //TODO: переписать через DTO на выдачу без рецептов?
             List<IngredientResponse> ingResp = new List<IngredientResponse>();
-            IEnumerable<Ingredient> ingredients = await _repository.GetAllAsync(cancellationToken);
+            if (page <= 0)
+            {
+                return Result<PagedResult<IngredientResponse>>.Failure(
+                    ErrorType.Validation,
+                    "Page must be greater than 0.");
+            }
 
-            foreach(var ingredient in ingredients)
+            if (pageSize <= 0 || pageSize > 100)
+            {
+                return Result<PagedResult<IngredientResponse>>.Failure(
+                    ErrorType.Validation,
+                    "Page size must be between 1 and 100.");
+            }
+            var pagedIngreds = await _repository.GetAllAsync(cancellationToken, page, pageSize);
+
+            foreach(var ingredient in pagedIngreds.Items)
             {
                 ingResp.Add(BuildIngredientResponse(ingredient));
             }
 
-            return Result<IEnumerable<IngredientResponse>>.Success(ingResp);
+            var ingRespPaged = new PagedResult<IngredientResponse>()
+            {
+                Items = ingResp,
+                Page = pagedIngreds.Page,
+                PageSize = pagedIngreds.PageSize,
+                TotalCount = pagedIngreds.TotalCount
+            };
+
+            return Result<PagedResult<IngredientResponse>>.Success(ingRespPaged);
         }
         public async Task<Result<IngredientResponse>> GetByNameAsync(string name, CancellationToken cancellationToken)
         {
