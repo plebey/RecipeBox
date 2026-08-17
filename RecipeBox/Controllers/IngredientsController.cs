@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBox.Common;
 using RecipeBox.DTOs.Ingredients;
+using RecipeBox.DTOs.Recipe;
 using RecipeBox.Models;
+using RecipeBox.Services;
 using RecipeBox.Services.Interfaces;
 
 namespace RecipeBox.Controllers
@@ -78,6 +81,34 @@ namespace RecipeBox.Controllers
 
             return HandleError(res.ErrorType, res.ErrorMsg);
 
+        }
+
+        [HttpPatch("{id}")]
+        [Consumes("application/json-patch+json")]
+        public async Task<IActionResult> PatchByID(int id, JsonPatchDocument<UpdateIngredientRequest> patchChanges, CancellationToken cancellationToken)
+        {
+            var fullIngredientResult = await _ingredientService.GetForUpdateAsync(id, cancellationToken);
+
+            if (!fullIngredientResult.IsSuccess)
+                return HandleError(fullIngredientResult.ErrorType, fullIngredientResult.ErrorMsg);
+
+            var fullIngredient = fullIngredientResult.Value!;
+
+            patchChanges.ApplyTo(fullIngredient, error =>
+            {
+                ModelState.AddModelError(
+                    "JsonPatch",
+                    error.ErrorMessage
+                );
+            });
+
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            var res = await _ingredientService.UpdateAsync(id, fullIngredient, cancellationToken);
+            if (res.IsSuccess)
+                return NoContent();
+            return HandleError(res.ErrorType, res.ErrorMsg);
         }
         /*
         [HttpGet("search")]

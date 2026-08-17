@@ -2,6 +2,7 @@
 using RecipeBox.DTOs;
 using RecipeBox.DTOs.Ingredients;
 using RecipeBox.DTOs.Recipe;
+using RecipeBox.DTOs.RecipeIngredients;
 using RecipeBox.Models;
 using RecipeBox.Repository.Interfaces;
 using RecipeBox.Services.Interfaces;
@@ -21,6 +22,28 @@ namespace RecipeBox.Services
                                           ingredient.Name,
                                           ingredient.Unit,
                                           ingredient.PurchaseURL);
+        }
+
+        public async Task<Result<UpdateIngredientRequest>> GetForUpdateAsync(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return Result<UpdateIngredientRequest>.Failure(
+                    ErrorType.Validation,
+                    "Id must be greater than 0.");
+            }
+
+            var ingredient = await _repository.GetByIdAsync(id, cancellationToken);
+
+            if (ingredient == null)
+                return Result<UpdateIngredientRequest>.Failure(ErrorType.NotFound, $"Ingredient with id {id} not found.");
+
+            return Result<UpdateIngredientRequest>.Success(new UpdateIngredientRequest()
+            {
+                Name = ingredient.Name,
+                PurchaseURL = ingredient.PurchaseURL,
+                Unit = ingredient.Unit
+            });
         }
 
         public async Task<Result<PagedResult<IngredientResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name)

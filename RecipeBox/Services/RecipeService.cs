@@ -39,6 +39,36 @@ namespace RecipeBox.Services
             return response;
         }
 
+        public async Task<Result<UpdateRecipeRequest>> GetForUpdateAsync(int id, CancellationToken cancellationToken)
+        {
+            if (id <= 0)
+            {
+                return Result<UpdateRecipeRequest>.Failure(
+                    ErrorType.Validation,
+                    "Id must be greater than 0.");
+            }
+
+            var recipe = await _repository.GetByIdAsync(id, cancellationToken);
+
+            if (recipe == null)
+                return Result<UpdateRecipeRequest>.Failure(ErrorType.NotFound, $"Recipe with id {id} not found.");
+
+            var recIngredList = new List<CreateRecipeIngredientRequest>();
+
+            foreach (RecipeIngredient recIng in recipe.RecipeIngredients)
+            {
+                recIngredList.Add(new CreateRecipeIngredientRequest()
+                { Amount = recIng.Amount, IngredientId = recIng.IngredientId});
+            }
+
+            return Result<UpdateRecipeRequest>.Success(new UpdateRecipeRequest() 
+                        { 
+                            Name = recipe.Name,
+                            Description = recipe.Description,
+                            RecipeIngredients = recIngredList,
+                            RecipeURL = recipe.RecipeURL
+                        });
+        }
 
         public async Task<Result<PagedResult<RecipeResponse>>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize, string? name)
         { 

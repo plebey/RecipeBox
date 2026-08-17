@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBox.Common;
 using RecipeBox.DTOs.Recipe;
@@ -69,6 +70,35 @@ namespace RecipeBox.Controllers
         public async Task<IActionResult> DeleteByID(int id, CancellationToken cancellationToken)
         {
             var res = await _recipeService.DeleteAsync(id, cancellationToken);
+            if (res.IsSuccess)
+                return NoContent();
+            return HandleError(res.ErrorType, res.ErrorMsg);
+        }
+
+
+        [HttpPatch("{id}")]
+        [Consumes("application/json-patch+json")]
+        public async Task<IActionResult> PatchByID(int id, JsonPatchDocument<UpdateRecipeRequest> patchChanges, CancellationToken cancellationToken)
+        {
+            var fullRecipeResult = await _recipeService.GetForUpdateAsync(id, cancellationToken);
+
+            if (!fullRecipeResult.IsSuccess)
+                return HandleError(fullRecipeResult.ErrorType, fullRecipeResult.ErrorMsg);
+
+            var fullRecipe = fullRecipeResult.Value!;
+
+            patchChanges.ApplyTo(fullRecipe, error =>
+            {
+                ModelState.AddModelError(
+                    "JsonPatch",
+                    error.ErrorMessage
+                );
+            });
+
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            var res = await _recipeService.UpdateAsync(id, fullRecipe, cancellationToken);
             if (res.IsSuccess)
                 return NoContent();
             return HandleError(res.ErrorType, res.ErrorMsg);
