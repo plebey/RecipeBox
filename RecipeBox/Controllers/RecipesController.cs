@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBox.Common;
@@ -48,6 +49,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Post(CreateRecipeRequest recipe, CancellationToken cancellationToken)
         {
@@ -57,6 +59,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutByID(int id, UpdateRecipeRequest recipe, CancellationToken cancellationToken)
         {
@@ -66,6 +69,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteByID(int id, CancellationToken cancellationToken)
         {

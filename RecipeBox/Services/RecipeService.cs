@@ -13,11 +13,13 @@ namespace RecipeBox.Services
     {
         private readonly IRecipeRepository _repository;
         private readonly IIngredientRepository _ingredientRepository;
+        private readonly ICurrentUserService _currentUserService;
 
-        public RecipeService(IRecipeRepository repository, IIngredientRepository ingredientRepo)
+        public RecipeService(IRecipeRepository repository, IIngredientRepository ingredientRepo, ICurrentUserService currentUserService)
         {
             this._repository = repository;
             this._ingredientRepository = ingredientRepo;
+            this._currentUserService = currentUserService;
         }
 
         public RecipeResponse BuildRecipeResponse(Recipe recipe)
@@ -206,7 +208,15 @@ namespace RecipeBox.Services
                                "One or more parameters are too long.");
             }
 
-            Recipe newRec = new Recipe(name, description, recipeURL);
+            int? userId = _currentUserService.UserId;
+            if (userId == null)
+            {
+                return Result<RecipeResponse>.Failure(ErrorType.Unauthorized,
+                               "Unknown user.");
+            }
+
+
+            Recipe newRec = new Recipe(userId.Value, name, description, recipeURL);
 
 
             foreach (var ingred in recipe.RecipeIngredients)
@@ -251,7 +261,27 @@ namespace RecipeBox.Services
                                "One or more parameters are too long.");
             }
 
-            Recipe newRec = new Recipe(name, description, recipeURL);
+            int? userId = _currentUserService.UserId;
+            if (userId == null)
+            {
+                return Result.Failure(ErrorType.Unauthorized,
+                               "Unknown user.");
+            }
+
+            Recipe? originalRecipe = await _repository.GetByIdAsync(id, cancellationToken);
+            if (originalRecipe == null)
+            {
+                Result.Failure(ErrorType.NotFound,
+                                  $"Recipe with id <{id}> was not found.");
+            }
+
+            if (originalRecipe.UserId != userId && _currentUserService.Role != "admin")
+            {
+                return Result.Failure(ErrorType.Forbidden,
+                               "You do not have permission to do this action.");
+            }
+
+                Recipe newRec = new Recipe(userId.Value, name, description, recipeURL);
 
             var recipeIngredients = recipe.RecipeIngredients ??
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();
@@ -274,6 +304,27 @@ namespace RecipeBox.Services
             if (id <= 0)
                 return Result.Failure(ErrorType.Validation,
                                                       $"Id must be greater than 0.");
+
+            Recipe? originalRecipe = await _repository.GetByIdAsync(id, cancellationToken);
+            if (originalRecipe == null)
+            {
+                Result.Failure(ErrorType.NotFound,
+                                  $"Recipe with id <{id}> was not found.");
+            }
+
+            int? userId = _currentUserService.UserId;
+            if (userId == null)
+            {
+                return Result.Failure(ErrorType.Unauthorized,
+                               "Unknown user.");
+            }
+
+            if (originalRecipe.UserId != userId && _currentUserService.Role != "admin")
+            {
+                return Result.Failure(ErrorType.Forbidden,
+                               "You do not have permission to do this action.");
+            }
+
             return await _repository.DeleteAsync(id, cancellationToken) ?
                    Result.Success() :
                    Result.Failure(ErrorType.NotFound,

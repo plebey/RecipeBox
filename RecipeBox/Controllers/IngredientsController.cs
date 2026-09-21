@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBox.Common;
@@ -72,6 +73,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteByID(int id, CancellationToken cancellationToken)
         {
