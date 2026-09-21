@@ -271,17 +271,17 @@ namespace RecipeBox.Services
             Recipe? originalRecipe = await _repository.GetByIdAsync(id, cancellationToken);
             if (originalRecipe == null)
             {
-                Result.Failure(ErrorType.NotFound,
+                return Result.Failure(ErrorType.NotFound,
                                   $"Recipe with id <{id}> was not found.");
             }
 
-            if (originalRecipe.UserId != userId && _currentUserService.Role != "admin")
+            if (originalRecipe.UserId != userId && _currentUserService.Role != UserRoles.Admin)
             {
                 return Result.Failure(ErrorType.Forbidden,
                                "You do not have permission to do this action.");
             }
 
-                Recipe newRec = new Recipe(userId.Value, name, description, recipeURL);
+                Recipe newRec = new Recipe(originalRecipe.UserId, name, description, recipeURL);
 
             var recipeIngredients = recipe.RecipeIngredients ??
                                     Enumerable.Empty<CreateRecipeIngredientRequest>();
@@ -308,7 +308,7 @@ namespace RecipeBox.Services
             Recipe? originalRecipe = await _repository.GetByIdAsync(id, cancellationToken);
             if (originalRecipe == null)
             {
-                Result.Failure(ErrorType.NotFound,
+                return Result.Failure(ErrorType.NotFound,
                                   $"Recipe with id <{id}> was not found.");
             }
 
@@ -319,7 +319,7 @@ namespace RecipeBox.Services
                                "Unknown user.");
             }
 
-            if (originalRecipe.UserId != userId && _currentUserService.Role != "admin")
+            if (originalRecipe.UserId != userId && _currentUserService.Role != UserRoles.Admin)
             {
                 return Result.Failure(ErrorType.Forbidden,
                                "You do not have permission to do this action.");

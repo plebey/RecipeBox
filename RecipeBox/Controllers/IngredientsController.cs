@@ -28,6 +28,10 @@ namespace RecipeBox.Controllers
                 ErrorType.Validation => BadRequest(errorMsg),
                 ErrorType.Conflict => Conflict(errorMsg),
                 ErrorType.NotFound => NotFound(errorMsg),
+                ErrorType.Unauthorized => Unauthorized(errorMsg),
+                ErrorType.Forbidden => StatusCode(
+                    StatusCodes.Status403Forbidden,
+                    errorMsg),
 
                 _ => throw new InvalidOperationException($"Unsupported error type: {errorType}")
             };
@@ -53,6 +57,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Post(CreateIngredientRequest ingredient, CancellationToken cancellationToken)
         {
@@ -62,6 +67,7 @@ namespace RecipeBox.Controllers
             return HandleError(res.ErrorType, res.ErrorMsg);
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutByID(int id, UpdateIngredientRequest ingredient, CancellationToken cancellationToken)
         {
@@ -85,6 +91,7 @@ namespace RecipeBox.Controllers
 
         }
 
+        [Authorize]
         [HttpPatch("{id}")]
         [Consumes("application/json-patch+json")]
         public async Task<IActionResult> PatchByID(int id, JsonPatchDocument<UpdateIngredientRequest> patchChanges, CancellationToken cancellationToken)
