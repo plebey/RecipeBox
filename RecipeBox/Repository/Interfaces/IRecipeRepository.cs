@@ -1,4 +1,6 @@
-﻿using RecipeBox.DTOs;
+﻿using RecipeBox.Common;
+using RecipeBox.DTOs;
+using RecipeBox.DTOs.Recipe;
 using RecipeBox.Models;
 
 namespace RecipeBox.Repository.Interfaces
@@ -12,6 +14,8 @@ namespace RecipeBox.Repository.Interfaces
         Task<bool> UpdateAsync(int id, Recipe recipe, CancellationToken cancellationToken);
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken);
         Task<IEnumerable<Recipe>> GetByNameAsync(string name, CancellationToken cancellationToken);
+        Task<IEnumerable<Recipe>> GetByUserAsync(int userId, CancellationToken cancellationToken);
+
 
     }
 }

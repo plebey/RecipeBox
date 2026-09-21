@@ -13,5 +13,11 @@
         public const int IngredientAmountDigitsLength = 10;
         public const int IngredientAmountAfterComma = 3;
 
+        public const int UserEmailMaxLength = 100;
+        public const int UserPasswordHashMaxLength = 150;
+        public const int UserPasswordMaxLength = 40;
+        public const int UserPasswordMinLength = 8;
+        public const int UserRoleMaxLength = 25;
+
     }
 }

@@ -20,7 +20,7 @@ namespace RecipeBox.Services
             this._ingredientRepository = ingredientRepo;
         }
 
-        private RecipeResponse BuildRecipeResponse(Recipe recipe)
+        public RecipeResponse BuildRecipeResponse(Recipe recipe)
         {
             RecipeResponse response = new RecipeResponse();
             response.Id = recipe.Id;
@@ -38,6 +38,26 @@ namespace RecipeBox.Services
             }
             return response;
         }
+
+
+        public async Task<Result<IEnumerable<RecipeResponse>>> GetByUserAsync(int userId, CancellationToken cancellationToken)
+        {
+            if (userId <= 0)
+                return Result<IEnumerable<RecipeResponse>>.Failure
+                                                            (ErrorType.Validation,
+                                                            "Id must be > 0");
+
+            var recipesByUser = await _repository.GetByUserAsync(userId, cancellationToken);
+
+            List<RecipeResponse> recipeRes = new List<RecipeResponse>();
+
+            foreach (var recipe in recipesByUser)
+            {
+                recipeRes.Add(BuildRecipeResponse(recipe));
+            }
+            return Result<IEnumerable<RecipeResponse>>.Success(recipeRes);
+        }
+
 
         public async Task<Result<UpdateRecipeRequest>> GetForUpdateAsync(int id, CancellationToken cancellationToken)
         {

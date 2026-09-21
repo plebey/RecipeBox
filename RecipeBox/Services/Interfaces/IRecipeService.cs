@@ -14,5 +14,7 @@ namespace RecipeBox.Services.Interfaces
         Task<Result> UpdateAsync(int id, UpdateRecipeRequest recipe, CancellationToken cancellationToken);
         Task<Result> DeleteAsync(int id, CancellationToken cancellationToken);
         Task<Result<IEnumerable<RecipeResponse>>> GetByNameAsync(string name, CancellationToken cancellationToken);
+        Task<Result<IEnumerable<RecipeResponse>>> GetByUserAsync(int userId, CancellationToken cancellationToken);
+        RecipeResponse BuildRecipeResponse(Recipe recipe);
     }
 }

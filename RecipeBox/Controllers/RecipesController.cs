@@ -12,7 +12,7 @@ namespace RecipeBox.Controllers
     [Route("api/[controller]")]
     public class RecipesController: ControllerBase
     {
-        private IRecipeService _recipeService;
+        private readonly IRecipeService _recipeService;
         public RecipesController(IRecipeService service)
         {
             _recipeService = service;

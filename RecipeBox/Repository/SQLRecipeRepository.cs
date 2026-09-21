@@ -47,6 +47,14 @@ namespace RecipeBox.Repository
                                    .Where(rec => rec.Name == name).ToListAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<Recipe>> GetByUserAsync(int userId, CancellationToken cancellationToken)
+        {
+            return await _context.Recipes.Include(r => r.RecipeIngredients)
+                                   .ThenInclude(i => i.Ingredient)
+                                   .Where(rec => rec.UserId == userId).ToListAsync(cancellationToken);
+        }
+
+
         public async Task<Recipe> CreateAsync(Recipe recipe, CancellationToken cancellationToken)
         {
             recipe.Id = 0;

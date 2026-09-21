@@ -4,6 +4,8 @@
     {
         NotFound,
         Conflict,
-        Validation
+        Validation,
+        Unauthorized,
+        Forbidden
     }
 }

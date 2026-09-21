@@ -9,6 +9,7 @@ namespace RecipeBox.Data
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public DBContextRecipeBox(DbContextOptions<DBContextRecipeBox> options)
             : base(options)
@@ -76,6 +77,31 @@ namespace RecipeBox.Data
             modelBuilder.Entity<Recipe>()
                 .Property(i => i.Description)
                 .HasMaxLength(Constraints.RecipeDescriptionMaxLength);
+
+            modelBuilder.Entity<Recipe>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Recipes)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(i => i.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .Property(i => i.Email)
+                .HasMaxLength(Constraints.UserEmailMaxLength)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(i => i.PasswordHash)
+                .HasMaxLength(Constraints.UserPasswordHashMaxLength)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(i => i.Role)
+                .HasMaxLength(Constraints.UserRoleMaxLength)
+                .IsRequired();
 
         }
     }

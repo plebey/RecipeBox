@@ -14,7 +14,7 @@ namespace RecipeBox.Controllers
     [Route("api/[controller]")]
     public class IngredientsController: ControllerBase
     {
-        private IIngredientService _ingredientService;
+        private readonly IIngredientService _ingredientService;
         public IngredientsController(IIngredientService service)
         {
             _ingredientService = service;

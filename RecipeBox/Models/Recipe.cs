@@ -7,6 +7,9 @@
         public string? Description { get; init; }
         public string? RecipeURL { get; init; }
 
+        public int UserId { get; set; }
+        public User User { get; set; }
+
         public List<RecipeIngredient> RecipeIngredients { get; init; } = new List<RecipeIngredient>();
 
         private Recipe() { }
